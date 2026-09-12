@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { WorkOSSignInButton } from "@/components/auth/workos-auth-buttons";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -144,6 +145,20 @@ function LoginForm() {
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </div>
+
+          {process.env.NEXT_PUBLIC_ENABLE_WORKOS_TEST === "true" && (
+            <>
+              <div className="mt-4 flex items-center gap-4">
+                <div className="h-px flex-1 bg-white/20" />
+                <span className="text-xs text-white/60">OR</span>
+                <div className="h-px flex-1 bg-white/20" />
+              </div>
+
+              <div className="mt-4">
+                <WorkOSSignInButton />
+              </div>
+            </>
+          )}
 
           <div className="mt-4 text-center">
             <Link

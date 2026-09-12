@@ -4,6 +4,9 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ThemeProvider } from "@/components/platform/theme-provider";
 import { Toaster } from "@/components/platform/toast";
+import { AuthKitProvider } from "@workos-inc/authkit-nextjs/components";
+
+const WORKOS_TEST_ENABLED = process.env.NEXT_PUBLIC_ENABLE_WORKOS_TEST === "true";
 
 export const metadata: Metadata = {
   title: "Decimal — The School Management Platform",
@@ -47,7 +50,13 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Decimal" />
       </head>
       <body className="min-h-full flex flex-col antialiased">
-        <ThemeProvider>{children}</ThemeProvider>
+        {WORKOS_TEST_ENABLED ? (
+          <AuthKitProvider>
+            <ThemeProvider>{children}</ThemeProvider>
+          </AuthKitProvider>
+        ) : (
+          <ThemeProvider>{children}</ThemeProvider>
+        )}
         <Toaster />
       </body>
     </html>

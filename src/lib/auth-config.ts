@@ -111,6 +111,7 @@ export function isAuthPath(pathname: string): boolean {
     pathname.startsWith("/auth") ||
     pathname.startsWith("/callback") ||
     pathname.startsWith("/mfa") ||
-    pathname.startsWith("/oauth")
+    pathname.startsWith("/oauth") ||
+    pathname.startsWith("/auth/workos")
   );
 }
