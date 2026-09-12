@@ -341,7 +341,7 @@ export async function listMyLearning(
       .order("created_at", { ascending: false }),
     admin
       .from("lesson_progress")
-      .select("lesson_id, status, completed_at")
+      .select("lesson_id, programme_id, status, completed_at")
       .eq("student_id", studentId)
       .eq("school_id", schoolId)
       .eq("status", "completed"),
@@ -349,9 +349,14 @@ export async function listMyLearning(
   if (enrolmentRes.error) throw enrolmentRes.error;
   if (progressRes.error) throw progressRes.error;
 
-  const completedLessonIds = new Set(
-    (progressRes.data ?? []).map((p) => p.lesson_id as string)
-  );
+  const completedByProgramme = new Map<string, Set<string>>();
+  for (const p of progressRes.data ?? []) {
+    const pid = p.programme_id as string;
+    const lid = p.lesson_id as string;
+    const set = completedByProgramme.get(pid) ?? new Set<string>();
+    set.add(lid);
+    completedByProgramme.set(pid, set);
+  }
 
   const enrolments: MyLearningEntry[] = (enrolmentRes.data ?? [])
     .filter((r) => r.programmes != null)
@@ -374,16 +379,13 @@ export async function listMyLearning(
         enrolmentStatus: r.status as string,
         enrolledAt: (r.created_at as string | null) ?? null,
         totalLessons: lessons?.[0]?.count ?? 0,
-        completedLessons: 0,
-        lessonsCompleted: [],
+        completedLessons: completedByProgramme.get(r.programme_id as string)
+          ?.size ?? 0,
+        lessonsCompleted: [
+          ...(completedByProgramme.get(r.programme_id as string) ?? []),
+        ],
       };
     });
-
-  for (const entry of enrolments) {
-    entry.completedLessons = entry.lessonsCompleted.filter((id) =>
-      completedLessonIds.has(id)
-    ).length;
-  }
 
   return { enrolments };
 }
@@ -485,6 +487,36 @@ export async function markLessonComplete(
     });
     if (error) throw error;
   }
+
+  const [completedRes, totalRes] = await Promise.all([
+    admin
+      .from("lesson_progress")
+      .select("id", { count: "exact", head: true })
+      .eq("programme_id", programmeId)
+      .eq("student_id", studentId)
+      .eq("status", "completed"),
+    admin
+      .from("programme_lessons")
+      .select("id", { count: "exact", head: true })
+      .eq("programme_id", programmeId)
+      .eq("status", "published"),
+  ]);
+  if (completedRes.error) throw completedRes.error;
+  if (totalRes.error) throw totalRes.error;
+
+  const total = totalRes.count ?? 0;
+  const done = completedRes.count ?? 0;
+  const progressPct = total === 0 ? 0 : Math.round((done / total) * 100);
+
+  await admin
+    .from("programme_enrolments")
+    .update({
+      progress_pct: progressPct,
+      completed_at:
+        progressPct === 100 ? new Date().toISOString() : undefined,
+    })
+    .eq("programme_id", programmeId)
+    .eq("student_id", studentId);
 
   return { ok: true };
 }
