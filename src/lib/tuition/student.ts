@@ -139,10 +139,8 @@ export async function listExploreProgrammes(
 
   const programmes: ExploreProgramme[] = (data ?? []).map(
     (r: Record<string, unknown>) => {
-      const subject = (r.curriculum_subjects as
-        | { name: string }[]
-        | null) ?? null;
-      const grade = (r.grades as { name: string }[] | null) ?? null;
+      const subject = (r.curriculum_subjects as unknown as { name: string } | null) ?? null;
+      const grade = (r.grades as unknown as { name: string } | null) ?? null;
       const instructors = (r.programme_instructors as unknown as
         | {
             position: string;
@@ -155,9 +153,9 @@ export async function listExploreProgrammes(
         title: r.title as string,
         type: r.type as string,
         subjectId: (r.subject_id as string | null) ?? null,
-        subjectName: subject?.[0]?.name ?? null,
+        subjectName: subject?.name ?? null,
         gradeId: (r.grade_id as string | null) ?? null,
-        gradeName: grade?.[0]?.name ?? null,
+        gradeName: grade?.name ?? null,
         difficulty: r.difficulty as string,
         durationWeeks: r.duration_weeks as number,
         coverUrl: (r.cover_url as string | null) ?? null,
@@ -297,11 +295,13 @@ export async function getStudentProgrammeDetail(
       title: row.title as string,
       type: row.type as string,
       subjectId: (row.subject_id as string | null) ?? null,
-      subjectName: (row.curriculum_subjects as { name: string }[] | null)?.[0]
-        ?.name ?? null,
+      subjectName: (row.curriculum_subjects as unknown as {
+        name: string;
+      } | null)?.name ?? null,
       gradeId: (row.grade_id as string | null) ?? null,
-      gradeName: (row.grades as { name: string }[] | null)?.[0]?.name ?? null,
-      curriculumName: (row.curriculums as { name: string }[] | null)?.[0]
+      gradeName: (row.grades as unknown as { name: string } | null)?.name ??
+        null,
+      curriculumName: (row.curriculums as unknown as { name: string } | null)
         ?.name ?? null,
       description: (row.description as string | null) ?? "",
       durationWeeks: row.duration_weeks as number,
@@ -364,9 +364,10 @@ export async function listMyLearning(
         programmeId: r.programme_id as string,
         title: (p.title as string) ?? "",
         type: (p.type as string) ?? "",
-        subjectName: (p.curriculum_subjects as { name: string }[] | null)?.[0]
+        subjectName: (p.curriculum_subjects as unknown as { name: string } | null)
           ?.name ?? null,
-        gradeName: (p.grades as { name: string }[] | null)?.[0]?.name ?? null,
+        gradeName: (p.grades as unknown as { name: string } | null)?.name ??
+          null,
         difficulty: (p.difficulty as string) ?? "beginner",
         durationWeeks: (p.duration_weeks as number) ?? 0,
         coverUrl: (p.cover_url as string | null) ?? null,
