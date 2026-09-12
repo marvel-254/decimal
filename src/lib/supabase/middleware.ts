@@ -78,6 +78,11 @@ export async function updateSession(request: NextRequest) {
     }
 
     if (!userRole) {
+      // Tuition resolves student/parent identities in its layout, so a user
+      // with no member role (e.g. a tuition-only student) may pass to /tuition.
+      if (pathname.startsWith("/tuition")) {
+        return supabaseResponse;
+      }
       const url = request.nextUrl.clone();
       url.pathname = "/no-access";
       return NextResponse.redirect(url);

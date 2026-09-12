@@ -10,7 +10,11 @@ import { NotFoundError, ValidationError } from "@/lib/errors";
 import { getPlanBySlug, getPlanById } from "@/lib/billing/plans";
 import { emitEvent } from "@/lib/services/events";
 import { logAudit } from "@/lib/services/audit";
-import type { Subscription, SubscriptionStatus } from "@/lib/billing/types";
+import type {
+  Subscription,
+  SubscriptionStatus,
+  BillingInterval,
+} from "@/lib/billing/types";
 
 function mapSubscription(row: Record<string, unknown>): Subscription {
   return {
@@ -25,6 +29,11 @@ function mapSubscription(row: Record<string, unknown>): Subscription {
     currentPeriodEnd: row.current_period_end as string | null,
     cancelAtPeriodEnd: row.cancel_at_period_end as boolean,
     trialEnd: row.trial_end as string | null,
+    billingInterval: (row.billing_interval as BillingInterval) ?? "monthly",
+    mpesaMerchantRequestId: row.mpesa_merchant_request_id as string | null,
+    mpesaCheckoutRequestId: row.mpesa_checkout_request_id as string | null,
+    mpesaPhone: row.mpesa_phone as string | null,
+    nextBillingDate: row.next_billing_date as string | null,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   };
@@ -76,6 +85,7 @@ export async function createTrialSubscription(
       school_id: schoolId,
       plan_id: plan.id,
       status: "trialing",
+      billing_interval: "monthly",
       current_period_start: now.toISOString(),
       current_period_end: trialEnd.toISOString(),
       trial_end: trialEnd.toISOString(),
@@ -109,23 +119,30 @@ export async function createTrialSubscription(
 
 /**
  * Activate a subscription after successful payment.
+ * Uses billing_interval to calculate the correct period length.
  */
 export async function activateSubscription(
   schoolId: string,
-  providerSubscriptionId: string
+  checkoutRequestId: string,
+  billingInterval: BillingInterval = "monthly"
 ): Promise<Subscription> {
   const admin = createAdminClient();
 
   const now = new Date();
-  const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const days = billingInterval === "annual" ? 365 : 30;
+  const periodEnd = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
 
   const { data, error } = await admin
     .from("subscriptions")
     .update({
       status: "active",
-      provider_subscription_id: providerSubscriptionId,
+      provider: "mpesa",
+      mpesa_checkout_request_id: checkoutRequestId,
+      provider_subscription_id: checkoutRequestId,
+      billing_interval: billingInterval,
       current_period_start: now.toISOString(),
       current_period_end: periodEnd.toISOString(),
+      next_billing_date: periodEnd.toISOString(),
       cancel_at_period_end: false,
     })
     .eq("school_id", schoolId)
@@ -147,7 +164,7 @@ export async function activateSubscription(
     schoolId,
     resourceType: "subscription",
     resourceId: data.id,
-    payload: { providerSubscriptionId },
+    payload: { checkoutRequestId, billingInterval },
   });
 
   await logAudit({
@@ -155,10 +172,35 @@ export async function activateSubscription(
     action: "subscription.activated",
     resourceType: "subscription",
     resourceId: data.id,
-    metadata: { providerSubscriptionId },
+    metadata: { checkoutRequestId, billingInterval },
   });
 
   return mapSubscription(data);
+}
+
+/**
+ * Update M-Pesa tracking IDs on a subscription before payment initiation.
+ */
+export async function trackMpesaPayment(
+  subscriptionId: string,
+  merchantRequestId: string,
+  checkoutRequestId: string,
+  phone: string
+): Promise<void> {
+  const admin = createAdminClient();
+
+  const { error } = await admin
+    .from("subscriptions")
+    .update({
+      mpesa_merchant_request_id: merchantRequestId,
+      mpesa_checkout_request_id: checkoutRequestId,
+      mpesa_phone: phone,
+    })
+    .eq("id", subscriptionId);
+
+  if (error) {
+    console.error("[Subscription] Error tracking M-Pesa payment:", error);
+  }
 }
 
 /**
@@ -326,11 +368,23 @@ export async function downgradeSubscription(
 }
 
 /**
- * Check and expire trials that have passed their end date.
- * Can be called from a cron job or on-demand.
+ * Process expired trials: downgrade to Free tier (not expire).
+ * Called by cron job.
  */
 export async function processExpiredTrials(): Promise<number> {
   const admin = createAdminClient();
+
+  // Find the Free plan
+  const { data: freePlan } = await admin
+    .from("plans")
+    .select("id")
+    .eq("slug", "free")
+    .single();
+
+  if (!freePlan) {
+    console.error("[Subscription] Free plan not found");
+    return 0;
+  }
 
   const { data: expired, error } = await admin
     .from("subscriptions")
@@ -342,23 +396,37 @@ export async function processExpiredTrials(): Promise<number> {
 
   let count = 0;
   for (const sub of expired) {
+    const now = new Date();
+    const perpetualEnd = new Date(
+      now.getTime() + 365 * 24 * 60 * 60 * 1000
+    );
+
+    // Downgrade to Free plan, set as active (not expired)
     await admin
       .from("subscriptions")
-      .update({ status: "expired" })
+      .update({
+        plan_id: freePlan.id,
+        status: "active",
+        current_period_start: now.toISOString(),
+        current_period_end: perpetualEnd.toISOString(),
+        next_billing_date: null, // Free tier has no billing
+      })
       .eq("id", sub.id);
 
     await emitEvent({
-      type: "subscription.expired",
+      type: "subscription.trial_expired",
       schoolId: sub.school_id,
       resourceType: "subscription",
       resourceId: sub.id,
+      payload: { action: "downgraded_to_free" },
     });
 
     await logAudit({
       schoolId: sub.school_id,
-      action: "subscription.expired",
+      action: "subscription.trial_expired",
       resourceType: "subscription",
       resourceId: sub.id,
+      metadata: { action: "downgraded_to_free" },
     });
 
     count++;

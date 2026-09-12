@@ -30,6 +30,14 @@ export const routeRoleMap: Record<string, string[]> = {
   "/finance": ["finance", "principal", "super_admin"],
   "/secretary": ["secretary", "principal", "super_admin"],
   "/dashboard": Object.keys(portalRoutes),
+  // Tuition: member-role spaces only. Student/parent identities are NOT member
+  // roles — they are resolved by the tuition layout's identity bridge
+  // (tuition_student_users / students.parent_user_id), never here.
+  "/tuition/teacher": ["teacher", "timetable_manager", "principal", "super_admin"],
+  // parent = read-only mirror of the school corner
+  "/tuition/school": ["principal", "super_admin", "finance", "admissions_officer", "secretary", "parent"],
+  // teacher = read + participate; adopt/publish = principal+; moderate = super_admin
+  "/tuition/network": ["super_admin", "principal", "teacher"],
 };
 
 export function getAllowedRoles(pathname: string): string[] | null {
@@ -53,6 +61,7 @@ export const protectedPaths = [
   "/finance",
   "/secretary",
   "/platform",
+  "/tuition",
 ];
 
 /**

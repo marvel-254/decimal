@@ -20,6 +20,7 @@ interface Plan {
   name: string;
   slug: string;
   priceMonthly: number;
+  priceAnnual: number | null;
   currency: string;
   maxStudents: number;
   maxStaff: number;
@@ -33,6 +34,8 @@ interface Subscription {
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
   trialEnd: string | null;
+  billingInterval: string;
+  mpesaPhone: string | null;
 }
 
 interface Usage {
@@ -217,9 +220,16 @@ export default function BillingPage() {
                   <StatusBadge status={subscription.status} />
                 </div>
                 <p className="text-2xl font-bold text-primary">
-                  {formatPrice(plan.priceMonthly, plan.currency)}
+                  {subscription.billingInterval === "annual" && plan.priceAnnual != null
+                    ? formatPrice(plan.priceAnnual / 12, plan.currency)
+                    : formatPrice(plan.priceMonthly, plan.currency)}
                   <span className="text-sm font-normal text-muted-foreground ml-1">
-                    / month
+                    / mo
+                    {subscription.billingInterval === "annual"
+                      ? " (billed annually)"
+                      : plan.priceMonthly > 0
+                        ? ""
+                        : ""}
                   </span>
                 </p>
                 <div className="space-y-1 text-sm text-muted-foreground">

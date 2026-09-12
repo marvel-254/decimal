@@ -15,6 +15,7 @@ function mapPlan(row: Record<string, unknown>): Plan {
     slug: row.slug as string,
     description: row.description as string | null,
     priceMonthly: row.price_monthly as number,
+    priceAnnual: (row.price_annual as number | null) ?? null,
     currency: row.currency as string,
     maxStudents: row.max_students as number,
     maxStaff: row.max_staff as number,

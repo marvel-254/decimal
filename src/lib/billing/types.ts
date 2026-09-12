@@ -11,6 +11,7 @@ export interface Plan {
   slug: string;
   description: string | null;
   priceMonthly: number;
+  priceAnnual: number | null; // null = annual not offered; value in pesas
   currency: string;
   maxStudents: number;
   maxStaff: number;
@@ -31,6 +32,11 @@ export interface Subscription {
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
   trialEnd: string | null;
+  billingInterval: "monthly" | "annual";
+  mpesaMerchantRequestId: string | null;
+  mpesaCheckoutRequestId: string | null;
+  mpesaPhone: string | null;
+  nextBillingDate: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -42,6 +48,8 @@ export type SubscriptionStatus =
   | "paused"
   | "cancelled"
   | "expired";
+
+export type BillingInterval = "monthly" | "annual";
 
 export interface Entitlements {
   features: Record<string, boolean>;

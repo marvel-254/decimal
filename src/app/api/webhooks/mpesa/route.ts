@@ -57,31 +57,26 @@ export const POST = createWebhookRoute(async ({ request, body: rawBody }) => {
     .single();
 
   if (existing) {
-    // Already processed
     return NextResponse.json({ ok: true, message: "Event already processed" });
   }
 
-  // Find the subscription associated with this checkout
-  // The checkout request ID should have been stored when initiating payment
+  // Find subscription by mpesa_merchant_request_id (set during checkout)
   const { data: subscription } = await admin
     .from("subscriptions")
-    .select("id, school_id, plan_id")
-    .eq("provider_subscription_id", checkoutRequestId)
+    .select("id, school_id, plan_id, billing_interval")
+    .eq("mpesa_merchant_request_id", merchantRequestId)
     .single();
 
   if (!subscription) {
-    // Store the event but log warning — subscription may not exist yet
-    console.warn("[Webhook] No subscription found for checkout:", checkoutRequestId);
-
-    // Still store the event for audit
+    console.warn("[Webhook] No subscription found for merchant:", merchantRequestId);
+    // Store event for audit even if subscription not found
     await admin.from("subscription_events").insert({
-      subscription_id: "00000000-0000-0000-0000-000000000000", // placeholder
+      subscription_id: "00000000-0000-0000-0000-000000000000",
       provider: "mpesa",
       provider_event_id: checkoutRequestId,
       event_type: "checkout.result",
       payload: payload as Record<string, unknown>,
     });
-
     return NextResponse.json({ ok: true });
   }
 
@@ -97,24 +92,57 @@ export const POST = createWebhookRoute(async ({ request, body: rawBody }) => {
   if (resultCode === 0) {
     // Payment successful — activate subscription
     const now = new Date();
-    const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const days = subscription.billing_interval === "annual" ? 365 : 30;
+    const periodEnd = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
 
     await admin
       .from("subscriptions")
       .update({
         status: "active",
+        provider: "mpesa",
+        mpesa_checkout_request_id: checkoutRequestId,
+        provider_subscription_id: checkoutRequestId,
         current_period_start: now.toISOString(),
         current_period_end: periodEnd.toISOString(),
+        next_billing_date: periodEnd.toISOString(),
         cancel_at_period_end: false,
       })
       .eq("id", subscription.id);
+
+    // Generate subscription invoice
+    const { data: plan } = await admin
+      .from("plans")
+      .select("price_monthly, price_annual, name")
+      .eq("id", subscription.plan_id)
+      .single();
+
+    if (plan) {
+      const amount =
+        subscription.billing_interval === "annual" && plan.price_annual != null
+          ? plan.price_annual
+          : plan.price_monthly;
+
+      await admin.from("billing_invoices").insert({
+        subscription_id: subscription.id,
+        school_id: subscription.school_id,
+        amount,
+        currency: "KES",
+        status: "paid",
+        billing_reason:
+          subscription.billing_interval === "annual"
+            ? "annual_renewal"
+            : "monthly_renewal",
+        provider_invoice_id: checkoutRequestId,
+        paid_at: now.toISOString(),
+      });
+    }
 
     await emitEvent({
       type: "subscription.activated",
       schoolId: subscription.school_id,
       resourceType: "subscription",
       resourceId: subscription.id,
-      payload: { provider: "mpesa", merchantRequestId },
+      payload: { provider: "mpesa", merchantRequestId, checkoutRequestId },
     });
 
     await logAudit({
@@ -122,7 +150,7 @@ export const POST = createWebhookRoute(async ({ request, body: rawBody }) => {
       action: "subscription.activated",
       resourceType: "subscription",
       resourceId: subscription.id,
-      metadata: { provider: "mpesa", resultCode },
+      metadata: { provider: "mpesa", resultCode, billingInterval: subscription.billing_interval },
     });
   } else {
     // Payment failed
