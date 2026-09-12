@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/tuition/empty-state";
 import { Button } from "@/components/ui/button";
 
 const START = [
-  { label: "Build a programme", href: "/tuition/teacher/programmes", icon: BookOpen, tint: "bg-tuition-tint-learn text-tuition-accent" },
+  { label: "My Programmes", href: "/tuition/teacher/programmes", icon: BookOpen, tint: "bg-tuition-tint-learn text-tuition-accent" },
   { label: "Load content", href: "/tuition/teacher/content", icon: Database, tint: "bg-tuition-tint-learn text-tuition-accent" },
   { label: "Add questions", href: "/tuition/teacher/question-bank", icon: ClipboardList, tint: "bg-tuition-tint-assess text-tuition-accent" },
   { label: "See your students", href: "/tuition/teacher/students", icon: Users, tint: "bg-tuition-tint-progress text-tuition-accent" },
