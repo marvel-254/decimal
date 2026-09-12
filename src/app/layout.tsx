@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
@@ -50,6 +51,22 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Decimal" />
       </head>
       <body className="min-h-full flex flex-col antialiased">
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-7XT9MTJH55"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="gtag-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-7XT9MTJH55');
+`,
+          }}
+        />
         {WORKOS_TEST_ENABLED ? (
           <AuthKitProvider>
             <ThemeProvider>{children}</ThemeProvider>

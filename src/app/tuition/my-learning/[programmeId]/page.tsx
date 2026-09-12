@@ -77,39 +77,44 @@ export default async function LearningOverviewPage({
                 const isOpen = index <= openFrom || isCompleted;
                 return (
                   <li key={l.id}>
-                    <Link
-                      href={`/tuition/learn/${programmeId}/${l.id}`}
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-muted/50",
-                        index !== 0 && "border-t border-border/60",
-                        !isOpen && "cursor-not-allowed hover:bg-transparent"
-                      )}
-                      aria-disabled={!isOpen}
-                      onClick={(e) => {
-                        if (!isOpen) e.preventDefault();
-                      }}
-                    >
-                      {isCompleted ? (
-                        <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />
-                      ) : isOpen ? (
-                        <PlayCircle className="h-4 w-4 shrink-0 text-tuition-accent" />
-                      ) : (
-                        <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      )}
-                      <span
+                    {isOpen ? (
+                      <Link
+                        href={`/tuition/learn/${programmeId}/${l.id}`}
                         className={cn(
-                          "flex-1 truncate",
-                          isOpen
-                            ? "text-foreground"
-                            : "text-muted-foreground"
+                          "flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-muted/50",
+                          index !== 0 && "border-t border-border/60"
                         )}
                       >
-                        {l.title}
+                        {isCompleted ? (
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />
+                        ) : (
+                          <PlayCircle className="h-4 w-4 shrink-0 text-tuition-accent" />
+                        )}
+                        <span className="flex-1 truncate text-foreground">
+                          {l.title}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock3 className="h-3 w-3" /> {l.durationMin} min
+                        </span>
+                      </Link>
+                    ) : (
+                      <span
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 text-sm",
+                          "cursor-not-allowed hover:bg-transparent",
+                          index !== 0 && "border-t border-border/60"
+                        )}
+                        aria-disabled
+                      >
+                        <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className="flex-1 truncate text-muted-foreground">
+                          {l.title}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock3 className="h-3 w-3" /> {l.durationMin} min
+                        </span>
                       </span>
-                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock3 className="h-3 w-3" /> {l.durationMin} min
-                      </span>
-                    </Link>
+                    )}
                   </li>
                 );
               })}
