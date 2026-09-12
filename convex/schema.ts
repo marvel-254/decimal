@@ -236,7 +236,7 @@ export default defineSchema({
     resourceId: v.optional(v.string()),
     metadata: v.optional(v.record(v.string(), v.any())),
   })
-    .index("by_organizationId_creationTime", ["organizationId", "_creationTime"])
+    .index("by_organizationId", ["organizationId"])
     .index("by_actorUserId", ["actorUserId"])
     .index("by_action", ["action"]),
 });
