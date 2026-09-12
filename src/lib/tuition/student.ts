@@ -333,7 +333,7 @@ export async function listMyLearning(
     admin
       .from("programme_enrolments")
       .select(
-        "status, created_at, programme_id, programme(id, title, type, subject_id, grade_id, difficulty, duration_weeks, cover_url, curriculum_subjects(name), grades(name), programme_lessons(count))"
+        "status, created_at, programme_id, programmes(id, title, type, subject_id, grade_id, difficulty, duration_weeks, cover_url, curriculum_subjects(name), grades(name), programme_lessons(count))"
       )
       .eq("student_id", studentId)
       .eq("school_id", schoolId)
@@ -354,9 +354,9 @@ export async function listMyLearning(
   );
 
   const enrolments: MyLearningEntry[] = (enrolmentRes.data ?? [])
-    .filter((r) => r.programme != null)
+    .filter((r) => r.programmes != null)
     .map((r: Record<string, unknown>) => {
-      const p = (r.programme ?? {}) as Record<string, unknown>;
+      const p = (r.programmes ?? {}) as Record<string, unknown>;
       const lessons = (p.programme_lessons as
         | { count?: number }[]
         | null) ?? null;
