@@ -633,6 +633,19 @@ export async function publishProgramme(
     .eq("id", id);
   if (error) throw error;
 
+  // Cascade status so student RLS (which requires lesson.status='published')
+  // can read the content. Modules already have is_active; enforce it.
+  await admin
+    .from("programme_lessons")
+    .update({ status: "published", updated_at: now })
+    .eq("programme_id", id)
+    .neq("status", "published");
+  await admin
+    .from("programme_modules")
+    .update({ is_active: true, updated_at: now })
+    .eq("programme_id", id)
+    .eq("is_active", false);
+
   return { ok: true, errors };
 }
 
