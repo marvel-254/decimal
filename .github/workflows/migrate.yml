@@ -1,0 +1,15 @@
+name: Apply migration 030
+on:
+  workflow_dispatch: {}
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get install -y postgresql-client >/dev/null
+      - env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          DB_URL="postgresql://postgres:${SUPABASE_DB_PASSWORD}@db.pgiytpbrnyxnnfupvaiv.supabase.co:5432/postgres"
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/030_tuition_programme_subject_fk.sql
