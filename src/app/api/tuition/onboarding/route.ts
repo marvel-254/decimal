@@ -56,20 +56,16 @@ export async function POST(request: Request) {
 
   const admin = createAdminClient();
 
-  // The account must already belong to the school (member, super_admin) —
-  // onboarding attaches an identity, never creates a membership.
-  const { data: membership } = await admin
-    .from("school_members")
-    .select("role")
-    .eq("user_id", user.id)
-    .eq("school_id", schoolId)
-    .eq("is_active", true)
+  // SYS-06: onboarding links an account to a school. Membership is NOT
+  // required — students and parents resolve their identity through the
+  // bridge, so a brand-new Decimal account can onboard into tuition too.
+  const { data: school } = await admin
+    .from("schools")
+    .select("id")
+    .eq("id", schoolId)
     .maybeSingle();
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Your account is not linked to this school" },
-      { status: 403 }
-    );
+  if (!school) {
+    return NextResponse.json({ error: "Unknown school" }, { status: 403 });
   }
 
   // Idempotency: if the identity bridge already exists, return the existing
