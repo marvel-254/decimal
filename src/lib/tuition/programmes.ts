@@ -417,11 +417,15 @@ export async function saveProgramme(
     .flatMap((m) => m.lessons.map((l) => l.id))
     .filter((x): x is string => !!x);
 
+  // PostgREST rejects `not.in.<single-value>` (no parens) for single-element
+  // arrays, so branch explicitly instead of chaining `.not("id","in",ids)`.
   let lessonDeleter = admin
     .from("programme_lessons")
     .delete()
     .eq("programme_id", id);
-  if (incomingLessonIds.length > 0) {
+  if (incomingLessonIds.length === 1) {
+    lessonDeleter = lessonDeleter.neq("id", incomingLessonIds[0]);
+  } else if (incomingLessonIds.length > 1) {
     lessonDeleter = lessonDeleter.not("id", "in", incomingLessonIds);
   }
   const { error: deleteLessonError } = await lessonDeleter;
@@ -431,7 +435,9 @@ export async function saveProgramme(
     .from("programme_modules")
     .delete()
     .eq("programme_id", id);
-  if (incomingModuleIds.length > 0) {
+  if (incomingModuleIds.length === 1) {
+    moduleDeleter = moduleDeleter.neq("id", incomingModuleIds[0]);
+  } else if (incomingModuleIds.length > 1) {
     moduleDeleter = moduleDeleter.not("id", "in", incomingModuleIds);
   }
   const { error: deleteModuleError } = await moduleDeleter;
@@ -522,7 +528,14 @@ export async function saveProgramme(
   const staffToRemove = (instructorRows ?? [])
     .map((r) => r.staff_id as string)
     .filter((staffId) => !incomingStaffIds.includes(staffId));
-  if (staffToRemove.length > 0) {
+  if (staffToRemove.length === 1) {
+    const { error } = await admin
+      .from("programme_instructors")
+      .delete()
+      .eq("programme_id", id)
+      .eq("staff_id", staffToRemove[0]);
+    if (error) throw error;
+  } else if (staffToRemove.length > 1) {
     const { error } = await admin
       .from("programme_instructors")
       .delete()
@@ -561,7 +574,14 @@ export async function saveProgramme(
   const classesToRemove = [...existingClassIds].filter(
     (classId) => !incomingClassIds.includes(classId)
   );
-  if (classesToRemove.length > 0) {
+  if (classesToRemove.length === 1) {
+    const { error } = await admin
+      .from("programme_cohorts")
+      .delete()
+      .eq("programme_id", id)
+      .eq("class_id", classesToRemove[0]);
+    if (error) throw error;
+  } else if (classesToRemove.length > 1) {
     const { error } = await admin
       .from("programme_cohorts")
       .delete()
@@ -571,10 +591,11 @@ export async function saveProgramme(
   }
   const classesToAdd = incomingClassIds.filter((c) => !existingClassIds.has(c));
   if (classesToAdd.length > 0) {
-    const { data: classRows, error: classReadError } = await admin
-      .from("classes")
-      .select("id, name")
-      .in("id", classesToAdd);
+    const classQuery =
+      classesToAdd.length === 1
+        ? admin.from("classes").select("id, name").eq("id", classesToAdd[0])
+        : admin.from("classes").select("id, name").in("id", classesToAdd);
+    const { data: classRows, error: classReadError } = await classQuery;
     if (classReadError) throw classReadError;
     const nameById = new Map(
       (classRows ?? []).map((r) => [r.id as string, r.name as string])
