@@ -18,7 +18,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-import { seedCbcSubjects } from "@/lib/cbc-subjects";
 
 interface School {
   id: string;
@@ -179,12 +178,15 @@ export default function AdmissionsOfficerPage() {
     if (!school || school.curriculum_subjects_loaded || seeding) return;
 
     setSeeding(true);
-    seedCbcSubjects(school.id, school.education_level).then(() => {
-      setSchool((prev) =>
-        prev ? { ...prev, curriculum_subjects_loaded: true } : prev
-      );
-      setSeeding(false);
-    });
+    fetch("/api/admissions/cbc-seed", { method: "POST" })
+      .then((r) => r.json())
+      .then(() => {
+        setSchool((prev) =>
+          prev ? { ...prev, curriculum_subjects_loaded: true } : prev
+        );
+        setSeeding(false);
+      })
+      .catch(() => setSeeding(false));
   }, [school, seeding]);
 
   const total = teacherCount + studentCount + nonTeachingCount;
