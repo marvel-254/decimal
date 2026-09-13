@@ -5,7 +5,6 @@ import {
   GraduationCap,
   Library,
   ShieldCheck,
-  Search,
   Sparkles,
 } from "lucide-react";
 import { getStudentContext } from "@/lib/tuition/student-context";
@@ -14,9 +13,14 @@ import {
   listExploreProgrammes,
   listMyLearning,
 } from "@/lib/tuition/student";
+import { ExploreSearchForm } from "@/components/tuition/explore-search-form";
 import { StudentEnrolButton } from "@/components/tuition/student-enrol-button";
 import { EmptyState } from "@/components/tuition/empty-state";
 import { cn } from "@/lib/utils";
+
+function firstParam(value: string | string[] | undefined): string {
+  return (Array.isArray(value) ? value[0] : value) ?? "";
+}
 
 const LEVEL_LABELS: Record<string, string> = {
   beginner: "Beginner",
@@ -34,9 +38,9 @@ export default async function ExplorePage({
   const params = await searchParams;
   const { schoolId, studentId } = await getStudentContext();
 
-  const q = (params.q ?? "").trim();
-  const subject = (params.subject ?? "").trim();
-  const grade = (params.grade ?? "").trim();
+  const q = firstParam(params.q).trim();
+  const subject = firstParam(params.subject).trim();
+  const grade = firstParam(params.grade).trim();
   const sort = params.sort === "rating" ? "rating" : "newest";
 
   const [{ programmes }, { subjects }, { enrolments }] = await Promise.all([
@@ -143,36 +147,7 @@ export default async function ExplorePage({
         </p>
       </div>
 
-      <form
-        method="GET"
-        action="/tuition/explore"
-        className="flex gap-2"
-        role="search"
-      >
-        <input
-          type="search"
-          name="q"
-          defaultValue={q}
-          placeholder="Search programmes, subjects…"
-          aria-label="Search programmes"
-          className="h-10 flex-1 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-tuition-accent"
-        />
-        <select
-          name="sort"
-          aria-label="Sort programmes"
-          defaultValue={sort}
-          className="h-10 rounded-lg border border-border bg-background px-2 text-sm focus-visible:ring-2 focus-visible:ring-tuition-accent"
-        >
-          <option value="newest">Newest</option>
-          <option value="rating">Top rated</option>
-        </select>
-        <button
-          type="submit"
-          className="inline-flex h-10 items-center gap-2 rounded-lg bg-tuition-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-tuition-accent/90"
-        >
-          <Search className="h-4 w-4" /> Search
-        </button>
-      </form>
+      <ExploreSearchForm defaultQ={q} defaultSort={sort} />
 
       <div className="flex flex-wrap items-center gap-2">
         <Link
@@ -280,7 +255,9 @@ export default async function ExplorePage({
       {!activeFilter && programmes.length > 0 ? (
         <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
           <Sparkles className="h-3.5 w-3.5" />
-          Sorted by newest first. Use “Top rated” above to reorder by rating.
+          {sort === "rating"
+            ? "Sorted by top rated. Use “Newest” above to reorder by newest first."
+            : "Sorted by newest first. Use “Top rated” above to reorder by rating."}
         </p>
       ) : null}
     </div>

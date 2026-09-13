@@ -29,13 +29,12 @@ export default async function TuitionOnboardingPage({
   const identity = await resolveTuitionIdentity(user.id);
   const admin = createAdminClient();
 
-  // Already linked → nothing to set up.
   if (identity.kind === "student") redirect("/tuition");
+
+  const isTeacherOrManager = identity.kind === "member" && ["teacher", "timetable_manager"].includes(identity.role);
 
   let schoolId = schoolIdFrom(identity);
 
-  // Fresh account with no school context: honour an explicit school pick
-  // (STU-01 "connect school"), then fall back to a known membership, then ask.
   if (!schoolId) {
     const { school } = await searchParams;
     if (school) {
@@ -78,7 +77,7 @@ export default async function TuitionOnboardingPage({
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Pick the school you belong to so we can line up programmes, classes
-            and assessments for your grade.
+            and assessments.
           </p>
         </div>
 
@@ -100,17 +99,53 @@ export default async function TuitionOnboardingPage({
     .eq("id", schoolId)
     .maybeSingle();
 
-  const { data: grades } = await admin
-    .from("grades")
-    .select("id, name, level, classes(id, name)")
-    .eq("school_id", schoolId)
-    .order("level", { ascending: true });
-
   const { data: profile } = await supabase
     .from("profiles")
     .select("full_name")
     .eq("id", user.id)
     .maybeSingle();
+
+  if (isTeacherOrManager) {
+    return (
+      <div className="mx-auto max-w-lg space-y-6 py-10">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-tuition-tint-teach text-tuition-accent">
+            <GraduationCap className="h-7 w-7" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Teacher setup
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Your school ({school?.name ?? "is set up"}) is ready. Start by
+            creating or managing your programmes.
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-dashed border-border p-4 text-center">
+          <p className="text-sm text-muted-foreground mb-2">
+            As a teacher, you can:
+          </p>
+          <ul className="text-sm text-left mb-4 space-y-1">
+            <li className="flex items-center gap-2">Create and publish programmes</li>
+            <li className="flex items-center gap-2">Add content, assessments and activities</li>
+            <li className="flex items-center gap-2">Track student progress</li>
+          </ul>
+          <a
+            href="/tuition/teacher"
+            className="inline-flex items-center justify-center rounded-md bg-tuition-accent px-4 py-2 text-sm font-semibold text-white hover:bg-tuition-accent/90"
+          >
+            Go to Teacher Dashboard
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  const { data: grades } = await admin
+    .from("grades")
+    .select("id, name, level, classes(id, name)")
+    .eq("school_id", schoolId)
+    .order("level", { ascending: true });
 
   return (
     <div className="mx-auto max-w-lg space-y-6 py-10">

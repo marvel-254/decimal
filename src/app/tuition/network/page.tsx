@@ -21,7 +21,7 @@ export default function NetworkDashboardPage() {
             programmes, assessments and inter-school activities.
           </p>
         </div>
-        <Link href="/tuition/school/network">
+        <Link href="/tuition/network">
           <Button variant="tuition">
             Your school's corner <ArrowRight className="h-4 w-4" />
           </Button>

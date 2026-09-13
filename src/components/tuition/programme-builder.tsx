@@ -8,7 +8,6 @@ import {
 } from "next/navigation";
 import Link from "next/link";
 import {
-  AlertCircle,
   ArrowLeft,
   ArrowRight,
   Check,
@@ -22,7 +21,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/platform/toast";
-import { EmptyState } from "@/components/tuition/empty-state";
 import { cn } from "@/lib/utils";
 import {
   type CurriculumRef,
@@ -127,6 +125,35 @@ function stableKey(tree: ProgrammeTree): string {
   return JSON.stringify({ ...tree, updatedAt: null, publishedAt: null });
 }
 
+/**
+ * Fresh in-memory draft for the New Programme wizard. Has no DB id — a
+ * `programmes` row is only created when the teacher explicitly saves or
+ * publishes, so nothing is persisted client-side or listed as a ghost draft.
+ */
+function blankProgramme(): ProgrammeTree {
+  return {
+    id: "",
+    title: "",
+    type: "course",
+    subjectId: null,
+    gradeId: null,
+    curriculumId: null,
+    description: "",
+    learningOutcomes: [],
+    prerequisites: "",
+    durationWeeks: 4,
+    difficulty: "beginner",
+    visibility: "school",
+    coverUrl: null,
+    status: "draft",
+    publishedAt: null,
+    updatedAt: null,
+    modules: [],
+    instructors: [],
+    cohortClassIds: [],
+  };
+}
+
 export function ProgrammeBuilder({
   schoolId,
   mode,
@@ -150,65 +177,23 @@ export function ProgrammeBuilder({
     ? Math.max(1, Math.min(5, stepRaw))
     : 1;
 
-  const [tree, setTreeState] = useState<ProgrammeTree | null>(initial);
-  const [loading, setLoading] = useState(mode === "create");
-  const [createError, setCreateError] = useState<string | null>(null);
+  const [tree, setTreeState] = useState<ProgrammeTree | null>(() =>
+    initial ?? (mode === "create" ? blankProgramme() : null)
+  );
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [reviewChecks, setReviewChecks] = useState<PublishCheck[] | null>(null);
 
-  const readyRef = useRef(mode === "edit");
-  const createdRef = useRef(mode === "edit");
+  const savedIdRef = useRef<string | null>(
+    mode === "edit" && initial ? initial.id : null
+  );
   const editVersion = useRef(0);
-  const lastSavedKey = useRef<string | null>(mode === "edit" && initial ? stableKey(initial) : null);
+  const lastSavedKey = useRef<string | null>(
+    mode === "edit" && initial ? stableKey(initial) : null
+  );
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const treeRef = useRef(tree);
   treeRef.current = tree;
-
-  // Create the draft shell when a new programme is started.
-  useEffect(() => {
-    if (mode !== "create" || createdRef.current) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/tuition/programmes", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: "New programme",
-            type: "course",
-            schoolId,
-          }),
-        });
-        const body = (await res.json()) as {
-          programme?: ProgrammeTree;
-          error?: string;
-        };
-        if (!res.ok || !body.programme) {
-          if (!cancelled) {
-            setCreateError(body.error ?? "Could not create programme");
-            setLoading(false);
-          }
-          return;
-        }
-        if (!cancelled) {
-          setTreeState(body.programme);
-          lastSavedKey.current = stableKey(body.programme);
-          readyRef.current = true;
-          createdRef.current = true;
-          setLoading(false);
-        }
-      } catch {
-        if (!cancelled) {
-          setCreateError("Network error — please try again.");
-          setLoading(false);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [mode, schoolId]);
 
   const mutate = (fn: (p: ProgrammeTree) => ProgrammeTree) => {
     editVersion.current += 1;
@@ -218,7 +203,7 @@ export function ProgrammeBuilder({
 
   const persist = async (opts?: { silent?: boolean }) => {
     const current = treeRef.current;
-    if (!current || saving || !readyRef.current) return;
+    if (!current || saving) return;
     const snapshot = current;
     const version = editVersion.current;
     const snapshotKey = stableKey(snapshot);
@@ -226,10 +211,36 @@ export function ProgrammeBuilder({
 
     setSaving(true);
     try {
-      const res = await fetch(`/api/tuition/programmes/${snapshot.id}`, {
+      // The New Programme wizard starts without a DB row. Only an explicit
+      // save/publish creates the draft — the id is kept for retries so a
+      // failed save never produces an orphaned row.
+      let id = snapshot.id || savedIdRef.current;
+      if (!id) {
+        const createRes = await fetch("/api/tuition/programmes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: snapshot.title.trim() || "Untitled programme",
+            type: snapshot.type,
+            schoolId,
+          }),
+        });
+        const createBody = (await createRes.json()) as {
+          programme?: ProgrammeTree;
+          error?: string;
+        };
+        if (!createRes.ok || !createBody.programme) {
+          if (!opts?.silent) toast(createBody.error ?? "Could not create programme");
+          return;
+        }
+        id = createBody.programme.id;
+        savedIdRef.current = id;
+      }
+
+      const res = await fetch(`/api/tuition/programmes/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(snapshot),
+        body: JSON.stringify({ ...snapshot, id }),
       });
       const body = (await res.json()) as {
         programme?: ProgrammeTree;
@@ -239,6 +250,7 @@ export function ProgrammeBuilder({
         if (!opts?.silent) toast(body?.error ?? "Could not save programme");
         return;
       }
+      savedIdRef.current = body.programme.id;
       const responseKey = stableKey(body.programme);
       lastSavedKey.current = responseKey;
       if (
@@ -255,9 +267,11 @@ export function ProgrammeBuilder({
     }
   };
 
-  // Debounced autosave on any tree mutation.
+  // Debounced autosave on any tree mutation. Never fires in the New
+  // Programme wizard until the first explicit save has created the draft row
+  // (lastSavedKey stays null until then).
   useEffect(() => {
-    if (!tree || !readyRef.current || !lastSavedKey.current) return;
+    if (!tree || !lastSavedKey.current) return;
     const key = stableKey(tree);
     if (key === lastSavedKey.current) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -279,7 +293,8 @@ export function ProgrammeBuilder({
     if (!tree) return;
     await persist({ silent: true });
     const latest = treeRef.current;
-    if (!latest) return;
+    const id = latest?.id || savedIdRef.current;
+    if (!latest || !id) return;
     const checks = validateProgrammeForPublish(latest);
     const failing = checks.filter((c) => !c.ok);
     setReviewChecks(checks);
@@ -289,7 +304,7 @@ export function ProgrammeBuilder({
     }
     setPublishing(true);
     try {
-      const res = await fetch(`/api/tuition/programmes/${latest.id}/publish`, {
+      const res = await fetch(`/api/tuition/programmes/${id}/publish`, {
         method: "POST",
       });
       const body = (await res.json()) as {
@@ -304,7 +319,7 @@ export function ProgrammeBuilder({
         return;
       }
       toast("Programme published");
-      router.push(`/tuition/teacher/programmes/${tree.id}`);
+      router.push(`/tuition/teacher/programmes/${id}`);
       router.refresh();
     } catch {
       toast("Network error — please try again.");
@@ -819,27 +834,6 @@ export function ProgrammeBuilder({
       </div>
     );
   };
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-muted/20 px-6 py-16 text-center">
-        <Loader2 className="h-6 w-6 animate-spin text-tuition-accent" />
-        <p className="text-sm text-muted-foreground">Setting up your programme…</p>
-      </div>
-    );
-  }
-
-  if (createError) {
-    return (
-      <EmptyState
-        icon={AlertCircle}
-        title="Couldn't start a new programme"
-        description={createError}
-        actionHref="/tuition/teacher/programmes"
-        actionLabel="Back to programmes"
-      />
-    );
-  }
 
   if (!tree) return null;
 

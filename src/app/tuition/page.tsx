@@ -16,6 +16,7 @@ import {
   tuitionHomeRedirect,
   type TuitionIdentity,
 } from "@/lib/tuition/identity";
+import { listMyLearning, type MyLearningEntry } from "@/lib/tuition/student";
 import { EmptyState } from "@/components/tuition/empty-state";
 import { Button } from "@/components/ui/button";
 
@@ -28,7 +29,17 @@ const QUICK_LINKS = [
   { label: "Progress", href: "/tuition/progress", icon: TrendingUp, tint: "bg-tuition-tint-progress text-tuition-accent" },
 ];
 
-function StudentHome() {
+function StudentHome({
+  enrolments,
+}: {
+  enrolments: MyLearningEntry[];
+}) {
+  const active = enrolments.find((e) => e.enrolmentStatus === "active");
+  const progressPct =
+    active && active.totalLessons > 0
+      ? Math.round((active.completedLessons / active.totalLessons) * 100)
+      : 0;
+
   return (
     <div className="space-y-6">
       <div>
@@ -53,13 +64,44 @@ function StudentHome() {
         ))}
       </div>
 
-      <EmptyState
-        icon={BookOpen}
-        title="Nothing on your desk yet"
-        description="Once your school publishes programmes for your grade, they'll appear here and you can start learning."
-        actionHref="/tuition/explore"
-        actionLabel="Browse the catalog"
-      />
+      {active ? (
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wide text-tuition-accent">
+                Continue learning
+              </p>
+              <h2 className="mt-0.5 truncate font-semibold text-foreground">
+                {active.title}
+              </h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {active.completedLessons} of {active.totalLessons} lessons
+                completed
+              </p>
+            </div>
+            <Link
+              href={`/tuition/my-learning/${active.programmeId}`}
+              className="shrink-0 text-sm font-semibold text-tuition-accent hover:underline"
+            >
+              Continue
+            </Link>
+          </div>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-tuition-accent transition-all"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+        </div>
+      ) : (
+        <EmptyState
+          icon={BookOpen}
+          title="Nothing on your desk yet"
+          description="Once your school publishes programmes for your grade, they'll appear here and you can start learning."
+          actionHref="/tuition/explore"
+          actionLabel="Browse the catalog"
+        />
+      )}
     </div>
   );
 }
@@ -94,7 +136,11 @@ export default async function TuitionHomePage() {
   const identity = await resolveTuitionIdentity(user.id);
 
   if (identity.kind === "student") {
-    return <StudentHome />;
+    const { enrolments } = await listMyLearning(
+      identity.studentId,
+      identity.schoolId
+    );
+    return <StudentHome enrolments={enrolments} />;
   }
 
   if (identity.kind === "parent") {

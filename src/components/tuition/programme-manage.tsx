@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/tuition/status-pill";
+import { ProgrammeDangerActions } from "@/components/tuition/programme-danger-actions";
 import { EmptyState } from "@/components/tuition/empty-state";
 import {
   Tabs,
@@ -203,6 +204,10 @@ export function ProgrammeManage({
           )}
         </div>
         <div className="flex items-center gap-2">
+          <ProgrammeDangerActions
+            programmeId={tree.id}
+            status={tree.status}
+          />
           <Link href={`/tuition/teacher/programmes/${tree.id}/edit?step=1`}>
             <Button variant="outline">
               <Edit3 className="h-4 w-4" /> Edit

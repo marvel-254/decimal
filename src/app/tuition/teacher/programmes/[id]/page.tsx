@@ -7,7 +7,10 @@ import {
   listClasses,
   listCurriculum,
   listStaff,
+  type CurriculumRef,
   type ProgrammeTree,
+  type SchoolClassRef,
+  type StaffRef,
 } from "@/lib/tuition/programmes";
 import { ProgrammeManage } from "@/components/tuition/programme-manage";
 import { EmptyState } from "@/components/tuition/empty-state";
@@ -22,11 +25,22 @@ export default async function ProgrammeDetailPage({
   const { id } = await params;
   const schoolId = await getCurrentSchoolId();
 
-  const [{ staff }, { classes }, { curriculums }] = await Promise.all([
-    listStaff(schoolId),
-    listClasses(schoolId),
-    listCurriculum(),
-  ]);
+  let staff: StaffRef[] = [];
+  let classes: SchoolClassRef[] = [];
+  let curriculums: CurriculumRef[] = [];
+  let refsFailed = false;
+  try {
+    const [staffRes, classesRes, curriculumsRes] = await Promise.all([
+      listStaff(schoolId),
+      listClasses(schoolId),
+      listCurriculum(),
+    ]);
+    staff = staffRes.staff;
+    classes = classesRes.classes;
+    curriculums = curriculumsRes.curriculums;
+  } catch {
+    refsFailed = true;
+  }
 
   let programme: ProgrammeTree | null = null;
   let loadFailed = false;
@@ -54,7 +68,7 @@ export default async function ProgrammeDetailPage({
     staff.map((s) => [s.id, s.fullName])
   );
 
-  if (loadFailed && !programme) {
+  if ((loadFailed && !programme) || refsFailed) {
     return (
       <div className="mx-auto max-w-2xl space-y-6">
         <Link
@@ -66,7 +80,7 @@ export default async function ProgrammeDetailPage({
         <EmptyState
           icon={BookOpen}
           title="Couldn't load this programme"
-          description="It may no longer exist, or it belongs to another school."
+          description="It may no longer exist, it belongs to another school, or its supporting data couldn't be loaded."
           actionHref="/tuition/teacher/programmes"
           actionLabel="My programmes"
         />

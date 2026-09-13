@@ -8,6 +8,8 @@ import {
   Trophy,
   ArrowRight,
 } from "lucide-react";
+import { getCurrentSchoolId } from "@/lib/tuition/current-school";
+import { listProgrammes } from "@/lib/tuition/programmes";
 import { EmptyState } from "@/components/tuition/empty-state";
 import { Button } from "@/components/ui/button";
 
@@ -20,10 +22,17 @@ const START = [
   { label: "Set up an activity", href: "/tuition/teacher/activities", icon: Trophy, tint: "bg-tuition-tint-activity text-tuition-accent" },
 ];
 
-export default function TeacherDashboardPage() {
+export default async function TeacherDashboardPage() {
+  const schoolId = await getCurrentSchoolId();
+  const { programmes } = await listProgrammes(schoolId);
+  
+  const draftCount = programmes.filter((p) => p.status === "draft").length;
+  const publishedCount = programmes.filter((p) => p.status === "published").length;
+  const totalCount = programmes.length;
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Teacher dashboard</h1>
           <p className="text-sm text-muted-foreground">
@@ -52,13 +61,30 @@ export default function TeacherDashboardPage() {
         ))}
       </div>
 
-      <EmptyState
-        icon={BookOpen}
-        title="No programmes yet"
-        description="Create your first programme to start publishing lessons, assign assessments and invite your cohort."
-        actionHref="/tuition/teacher/programmes"
-        actionLabel="Create a programme"
-      />
+      {totalCount === 0 ? (
+        <EmptyState
+          icon={BookOpen}
+          title="No programmes yet"
+          description="Create your first programme to start publishing lessons, assign assessments and invite your cohort."
+          actionHref="/tuition/teacher/programmes"
+          actionLabel="Create a programme"
+        />
+      ) : (
+        <div className="rounded-xl border border-border bg-card p-4">
+          <h3 className="text-sm font-semibold text-foreground mb-2">Your programme stats</h3>
+          <div className="flex gap-4 text-sm">
+            <div>
+              <span className="font-bold text-tuition-accent">{draftCount}</span> Drafts
+            </div>
+            <div>
+              <span className="font-bold text-tuition-accent">{publishedCount}</span> Published
+            </div>
+            <div>
+              <span className="font-bold text-tuition-accent">{totalCount}</span> Total
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

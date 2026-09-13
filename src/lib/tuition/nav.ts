@@ -48,14 +48,9 @@ export const tuitionNav: Record<TuitionShellMode, TuitionNavItem[]> = {
     { label: "Students", href: "/tuition/school/students", icon: Award },
     { label: "Assessments", href: "/tuition/school/assessments", icon: ClipboardList },
     { label: "Activities", href: "/tuition/school/activities", icon: Trophy },
-    { label: "Network", href: "/tuition/school/network", icon: TrendingUp },
+    { label: "Network", href: "/tuition/network", icon: TrendingUp },
   ],
   network: [
-    { label: "Dashboard", href: "/tuition/network", icon: LayoutDashboard },
-    { label: "Schools", href: "/tuition/network/schools", icon: Users },
-    { label: "Programmes", href: "/tuition/network/programmes", icon: BookOpen },
-    { label: "Assessments", href: "/tuition/network/assessments", icon: ClipboardList },
-    { label: "Activities", href: "/tuition/network/activities", icon: Trophy },
-    { label: "Moderation", href: "/tuition/network/moderation", icon: FileText },
+    { label: "Network", href: "/tuition/network", icon: TrendingUp },
   ],
 };

@@ -7,7 +7,10 @@ import {
   listClasses,
   listCurriculum,
   listStaff,
+  type CurriculumRef,
   type ProgrammeTree,
+  type SchoolClassRef,
+  type StaffRef,
 } from "@/lib/tuition/programmes";
 import { ProgrammeBuilder } from "@/components/tuition/programme-builder";
 import { EmptyState } from "@/components/tuition/empty-state";
@@ -22,11 +25,22 @@ export default async function EditProgrammePage({
   const { id } = await params;
   const schoolId = await getCurrentSchoolId();
 
-  const refs = await Promise.all([
-    listStaff(schoolId),
-    listClasses(schoolId),
-    listCurriculum(),
-  ]);
+  let staff: StaffRef[] = [];
+  let classes: SchoolClassRef[] = [];
+  let curriculums: CurriculumRef[] = [];
+  let refsFailed = false;
+  try {
+    const [staffRes, classesRes, curriculumsRes] = await Promise.all([
+      listStaff(schoolId),
+      listClasses(schoolId),
+      listCurriculum(),
+    ]);
+    staff = staffRes.staff;
+    classes = classesRes.classes;
+    curriculums = curriculumsRes.curriculums;
+  } catch {
+    refsFailed = true;
+  }
 
   let initial: ProgrammeTree | null = null;
   try {
@@ -36,7 +50,7 @@ export default async function EditProgrammePage({
     initial = null;
   }
 
-  if (!initial) {
+  if (refsFailed || !initial) {
     return (
       <div className="mx-auto max-w-2xl space-y-6">
         <Link
@@ -48,7 +62,7 @@ export default async function EditProgrammePage({
         <EmptyState
           icon={BookOpen}
           title="Couldn't load this programme"
-          description="It may no longer exist, or it belongs to another school. Go back to your programme list to pick another."
+          description="There was a problem loading it or its builder data. It may no longer exist, or it belongs to another school. Go back to your programme list to pick another."
           actionHref="/tuition/teacher/programmes"
           actionLabel="My programmes"
         />
@@ -82,12 +96,13 @@ export default async function EditProgrammePage({
         }
       >
         <ProgrammeBuilder
+          key={id}
           schoolId={schoolId}
           mode="edit"
           initial={initial}
-          staff={refs[0].staff}
-          classes={refs[1].classes}
-          curriculums={refs[2].curriculums}
+          staff={staff}
+          classes={classes}
+          curriculums={curriculums}
         />
       </Suspense>
     </div>

@@ -650,6 +650,39 @@ export async function publishProgramme(
 }
 
 /**
+ * Archive a programme: flips it to `archived` and deactivates it so it
+ * disappears from the staff list and student access via RLS, while keeping
+ * the row and its structure intact for later review or restore.
+ */
+export async function archiveProgramme(
+  id: string
+): Promise<{ ok: boolean; error?: string }> {
+  const admin = createAdminClient();
+  const now = new Date().toISOString();
+  const { error } = await admin
+    .from("programmes")
+    .update({ status: "archived", is_active: false, updated_at: now })
+    .eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+/**
+ * Permanently delete a draft programme. Child rows (modules, lessons,
+ * cohorts, instructors, enrolments, progress) are removed by their
+ * ON DELETE CASCADE foreign keys. Only drafts reach this call — the API
+ * route enforces the status check before running.
+ */
+export async function deleteProgramme(
+  id: string
+): Promise<{ ok: boolean; error?: string }> {
+  const admin = createAdminClient();
+  const { error } = await admin.from("programmes").delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+/**
  * Staff of a school. Staff relate to school_members via user_id (there is no
  * school_members.staff_id column), so rows are listed directly off the staff
  * table — which carries school_id — scoped by school.

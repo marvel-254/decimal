@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, Search } from "lucide-react";
 import { getCurrentSchoolId } from "@/lib/tuition/current-school";
 import {
   listClasses,
@@ -9,14 +9,30 @@ import {
 import { ProgrammesList } from "@/components/tuition/programme-list";
 import { Button } from "@/components/ui/button";
 
-export default async function TeacherProgrammesPage() {
+function firstParam(value: string | string[] | undefined): string {
+  return (Array.isArray(value) ? value[0] : value) ?? "";
+}
+
+export const metadata = { title: "My Programmes | Tuition" };
+
+export default async function TeacherProgrammesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const schoolId = await getCurrentSchoolId();
+  const params = await searchParams;
+  const q = firstParam(params.q).trim();
 
   const [{ programmes }, { classes }, { curriculums }] = await Promise.all([
     listProgrammes(schoolId),
     listClasses(schoolId),
     listCurriculum(),
   ]);
+
+  const filteredProgrammes = q
+    ? programmes.filter((p) => p.title.toLowerCase().includes(q.toLowerCase()))
+    : programmes;
 
   const subjectNameById: Record<string, string> = {};
   for (const c of curriculums) {
@@ -54,8 +70,32 @@ export default async function TeacherProgrammesPage() {
         </Link>
       </div>
 
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="search"
+            placeholder="Search programmes..."
+            defaultValue={q}
+            className="w-full rounded-lg border border-border bg-background pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-tuition-accent"
+            onChange={(e) => {
+              const value = e.target.value.trim();
+              const url = value
+                ? `/tuition/teacher/programmes?q=${encodeURIComponent(value)}`
+                : "/tuition/teacher/programmes";
+              window.location.assign(url);
+            }}
+          />
+        </div>
+        {q && (
+          <span className="text-sm text-muted-foreground">
+            Showing {filteredProgrammes.length} result{filteredProgrammes.length === 1 ? "" : "s"}
+          </span>
+        )}
+      </div>
+
       <ProgrammesList
-        programmes={programmes}
+        programmes={filteredProgrammes}
         subjectNameById={subjectNameById}
         gradeNameById={gradeNameById}
       />

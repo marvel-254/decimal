@@ -1,24 +1,59 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Layers, Loader2 } from "lucide-react";
 import { getCurrentSchoolId } from "@/lib/tuition/current-school";
 import {
   listClasses,
   listCurriculum,
   listStaff,
+  type CurriculumRef,
+  type SchoolClassRef,
+  type StaffRef,
 } from "@/lib/tuition/programmes";
 import { ProgrammeBuilder } from "@/components/tuition/programme-builder";
+import { EmptyState } from "@/components/tuition/empty-state";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewProgrammePage() {
   const schoolId = await getCurrentSchoolId();
 
-  const [{ staff }, { classes }, { curriculums }] = await Promise.all([
-    listStaff(schoolId),
-    listClasses(schoolId),
-    listCurriculum(),
-  ]);
+  let staff: StaffRef[] = [];
+  let classes: SchoolClassRef[] = [];
+  let curriculums: CurriculumRef[] = [];
+  let refsFailed = false;
+  try {
+    const [staffRes, classesRes, curriculumsRes] = await Promise.all([
+      listStaff(schoolId),
+      listClasses(schoolId),
+      listCurriculum(),
+    ]);
+    staff = staffRes.staff;
+    classes = classesRes.classes;
+    curriculums = curriculumsRes.curriculums;
+  } catch {
+    refsFailed = true;
+  }
+
+  if (refsFailed) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-6">
+        <Link
+          href="/tuition/teacher/programmes"
+          className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> Back to programmes
+        </Link>
+        <EmptyState
+          icon={Layers}
+          title="Couldn't open the programme builder"
+          description="Your staff, classes and curriculum data couldn't be loaded. Give it another go."
+          actionHref="/tuition/teacher/programmes"
+          actionLabel="My programmes"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -47,6 +82,7 @@ export default async function NewProgrammePage() {
         }
       >
         <ProgrammeBuilder
+          key="tuition-programme-new"
           schoolId={schoolId}
           mode="create"
           initial={null}
