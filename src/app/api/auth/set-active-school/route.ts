@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { logAudit } from "@/lib/services/audit";
 import { portalRoutes } from "@/lib/auth-config";
+import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 
 /**
  * Set the user's active school — and, for super admins, enter a school.
@@ -71,14 +72,11 @@ export async function POST(request: Request) {
   // Super admin flag — used by the Enter School flow below and to guard the
   // school-mode cleanup (the decimal_school_mode cookie is only ever written
   // for super-admin enters).
-  const { data: superAdminRows } = await supabase
-    .from("school_members")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("role", "super_admin")
-    .eq("is_active", true)
-    .limit(1);
-  const isSuperAdmin = Boolean(superAdminRows && superAdminRows.length > 0);
+  //
+  // Goes through is_super_admin(), not a school_members lookup: a platform
+  // admin holds no membership at all, so the old query reported `false` for
+  // them and blocked Enter School entirely.
+  const isSuperAdmin = await isPlatformAdmin(supabase);
 
   // Super admin "Enter School": no membership with this role, but a super
   // admin may operate any school as principal via a temporary membership.

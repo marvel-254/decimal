@@ -58,6 +58,20 @@ NEVER: `<Button asChild><Link>...</Link></Button>`
 - `school_members.user_id` is NOT NULL
 - `member_role` enum: `super_admin, principal, teacher, finance, admissions_officer, secretary, parent`
 
+### Platform super admin
+`profiles.is_platform_admin` marks a platform operator who holds **no** school
+membership (`school_members.school_id` is NOT NULL, so the old membership-based
+check could not represent them).
+
+**Always** use `isPlatformAdmin(client)` from `@/lib/auth/platform-admin`
+(or the `is_super_admin()` RPC) to test for super admin. Never query
+`school_members` for `role = 'super_admin'` — that returns empty for pure
+platform admins and silently blocks `/super-admin`, Enter School, and Exit School.
+
+The flag is pinned by a `BEFORE UPDATE` trigger (`guard_platform_admin_flag`)
+because the "users can update own" profile policy has no `WITH CHECK`, so any
+user could otherwise self-promote via a plain profile update.
+
 ### Supabase Clients
 - `src/lib/supabase/server.ts` — cookie-based SSR client (uses `@supabase/ssr`)
 - `src/lib/supabase/server-admin.ts` — service-role client (admin operations)

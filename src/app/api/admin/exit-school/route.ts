@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { logAudit } from "@/lib/services/audit";
+import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 
 /**
  * Super admin "Exit School".
@@ -24,15 +25,8 @@ export async function POST(request: Request) {
   }
 
   // Super admin only.
-  const { data: adminCheck } = await supabase
-    .from("school_members")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("role", "super_admin")
-    .eq("is_active", true)
-    .limit(1);
-
-  if (!adminCheck || adminCheck.length === 0) {
+  const isSuperAdmin = await isPlatformAdmin(supabase);
+  if (!isSuperAdmin) {
     return NextResponse.json(
       { error: "Super admin access required" },
       { status: 403 }

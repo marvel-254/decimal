@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PlatformShell } from "@/components/platform/shell";
 import { resolvePortalRole, ROLE_LABELS } from "@/lib/auth-config";
+import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 
 export default async function PlatformLayout({
   children,
@@ -47,13 +48,23 @@ export default async function PlatformLayout({
   }
 
   // Super admin operating inside a school as principal ("Enter School" flow).
-  const isSuperAdmin = (members ?? []).some((m) => m.role === "super_admin");
+  // Goes through is_super_admin() rather than inspecting `members`, because a
+  // pure platform admin has no memberships at all and `members` is empty.
+  const isSuperAdmin = await isPlatformAdmin(supabase);
   const schoolMode =
     isSuperAdmin && Boolean(cookieStore.get("decimal_school_mode")?.value);
 
   let shellRole = role;
   let roleLabel = ROLE_LABELS[role] ?? "User";
   let schoolContext: { schoolName: string } | null = null;
+
+  // A platform admin with no membership has no portal role to resolve, so
+  // `role` fell back to "teacher" above. Show the super-admin shell instead of
+  // a teacher shell with an empty sidebar.
+  if (isSuperAdmin && (members?.length ?? 0) === 0 && !schoolMode) {
+    shellRole = "super_admin";
+    roleLabel = ROLE_LABELS.super_admin ?? "Super Admin";
+  }
 
   if (schoolMode) {
     shellRole = "principal";

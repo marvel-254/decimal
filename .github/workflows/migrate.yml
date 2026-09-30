@@ -14,4 +14,7 @@ jobs:
           DB_URL="postgresql://postgres.pgiytpbrnyxnnfupvaiv:${SUPABASE_DB_PASSWORD}@aws-0-eu-central-1.pooler.supabase.com:5432/postgres"
           psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/030_tuition_programme_subject_fk.sql
           psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/031_tuition_publish_lesson_status.sql
-          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/032_add_super_admin_membership.sql
+          # Adds profiles.is_platform_admin and redefines is_super_admin() to
+          # accept it alongside the legacy per-school super_admin membership.
+          # Idempotent — safe to re-run.
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/032_platform_admin.sql
