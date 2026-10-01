@@ -2,7 +2,7 @@
 
 **School management for clearer, faster, and more connected school operations.**
 
-[![Live app](https://img.shields.io/badge/live%20app-decimal--app.vercel.app-4F46E5?style=flat-square)](https://decimal-app.vercel.app)
+[![Live app](https://img.shields.io/badge/live%20app-decimal.omixsystems.store-4F46E5?style=flat-square)](https://decimal.omixsystems.store)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ECF8E?style=flat-square&logo=supabase)](https://supabase.com/)
 
@@ -189,6 +189,6 @@ The project-specific development conventions are documented in [`AGENTS.md`](AGE
 
 ## Links
 
-- [Live application](https://decimal-app.vercel.app)
+- [Live application](https://decimal.omixsystems.store)
 - [Full setup and operations documentation](DOCUMENTATION.md)
 - [GitHub repository](https://github.com/twistedoliver211fs-art/decimal)

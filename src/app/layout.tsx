@@ -6,13 +6,18 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/platform/theme-provider";
 import { Toaster } from "@/components/platform/toast";
 import { AuthKitProvider } from "@workos-inc/authkit-nextjs/components";
+import { absoluteUrl, siteUrl } from "@/lib/site";
 
 const WORKOS_TEST_ENABLED = process.env.NEXT_PUBLIC_ENABLE_WORKOS_TEST === "true";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Decimal — The School Management Platform",
   description:
     "Run your school with clarity. Administration, academics, attendance, finance, admissions, communication and intelligent scheduling in one platform.",
+  alternates: {
+    canonical: "/",
+  },
   other: {
     "google-site-verification": "googled3a1c2771becc781.html",
   },
@@ -49,6 +54,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Decimal" />
+        <link rel="alternate" type="text/plain" href={absoluteUrl("/llms.txt")} title="llms.txt" />
       </head>
       <body className="min-h-full flex flex-col antialiased">
         <Script

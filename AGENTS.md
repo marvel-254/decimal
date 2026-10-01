@@ -18,7 +18,7 @@ Multi-school management platform. Next.js 16 App Router + Supabase + Vercel.
 Role-based portals: super_admin, principal, teacher, finance, admissions_officer, secretary, parent.
 
 **Repo:** `https://github.com/twistedoliver211fs-art/decimal`
-**Live:** `https://decimal-app.vercel.app`
+**Live:** `https://decimal.omixsystems.store` (Vercel alias: `https://decimal-app.vercel.app`)
 **Publisher:** Omix Digital Solutions (`omixsystems.store`)
 
 ---
@@ -162,7 +162,7 @@ git push origin main && git push origin v0.2.0
 ### Setup
 - Config: `capacitor.config.ts`
 - App ID: `com.omixdigital.decimal`
-- Web URL: `https://decimal-app.vercel.app`
+- Web URL: `https://decimal.omixsystems.store`
 
 ### Build locally (requires JDK 21)
 ```bash
@@ -303,6 +303,32 @@ Go to `https://github.com/twistedoliver211fs-art/decimal/settings/secrets/action
 | Tauri build picks up `src-tauri/gen/` TS errors | Already excluded in `tsconfig.json` |
 | Lint fails in CI | Non-blocking — warnings only |
 | Vercel deploy timeout | Use CI deploy (push to main) or faster network |
+| Sitemap/robots emit `localhost` URLs | `NEXT_PUBLIC_SITE_URL` is wrong in the Vercel production env |
+
+---
+
+## SEO / Indexing
+
+Canonical host comes from `NEXT_PUBLIC_SITE_URL` (production value:
+`https://decimal.omixsystems.store`). `src/lib/site.ts` ignores a `localhost`
+value whenever a real Vercel deployment URL exists, so a stale env var can
+never ship localhost links to crawlers.
+
+| File | Output |
+|------|--------|
+| `src/app/sitemap.ts` | `/sitemap.xml` — public pages + every page in `docsNavigation` |
+| `src/app/robots.ts` | `/robots.txt` — disallows `/api/`, auth and all role portals |
+| `src/app/llms.txt/route.ts` | `/llms.txt` — generated from `docsNavigation` |
+| `src/lib/site.ts` | `siteUrl` / `absoluteUrl` helpers |
+
+Only `(public)` routes belong in the sitemap. Anything under `(platform)`,
+`tuition` or `(auth)` requires a session — adding one to the sitemap leaks
+private URLs. Doc URLs come from `getAllDocSlugs()`, so new docs are indexed
+automatically once added to `src/lib/docs/docs-data.ts`.
+
+After deploy, submit `https://decimal.omixsystems.store/sitemap.xml` in Google
+Search Console (the `google-site-verification` token is already set in
+`src/app/layout.tsx`).
 
 ---
 
