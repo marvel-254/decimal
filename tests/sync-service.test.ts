@@ -43,6 +43,7 @@ function makeSupabaseStub(tableResponses: Record<string, object[]>) {
         state.filters[col] = vals;
         return builder;
       }),
+      maybeSingle: vi.fn(() => builder),
       then(resolve: (v: unknown) => void) {
         const queue = tableResponses[table] ?? [];
         const response = queue.length > 0 ? queue.shift()! : { data: [], error: null };
@@ -186,6 +187,7 @@ describe("syncAttendanceRecords", () => {
 describe("syncMarkRecords", () => {
   it("reports a conflict instead of overwriting a newer server score", async () => {
     const supabase = makeSupabaseStub({
+      exams: [{ data: [{ id: "e1" }], error: null }],
       exam_results: [{ data: [{ id: "srv-1", exam_id: "e1", student_id: "s1", subject_id: "sub1", score: 75, updated_at: "2026-01-05T12:00:00Z" }], error: null }],
     });
     const result = await syncMarkRecords(
@@ -200,12 +202,30 @@ describe("syncMarkRecords", () => {
     expect(result.conflicts[0].server.score).toBe(75);
     expect(result.conflicts[0].client.score).toBe(90);
   });
+
+  it("drops marks for an exam belonging to another school (cross-tenant guard)", async () => {
+    const supabase = makeSupabaseStub({
+      // The school owns no exam with this id.
+      exams: [{ data: [], error: null }],
+      exam_results: [{ data: [], error: null }],
+    });
+    const result = await syncMarkRecords(
+      supabase as never,
+      SCHOOL,
+      USER,
+      [{ id: "local-1", exam_id: "exam-OTHER-SCHOOL", student_id: "s1", subject_id: "sub1", score: 90, _synced_at: "2026-01-05T09:00:00Z" }]
+    );
+
+    expect(result.synced).toBe(0);
+    expect(result.skipped).toBe(1);
+    expect(supabase.from("exam_results").insert).not.toHaveBeenCalled();
+  });
 });
 
 describe("resolveConflict", () => {
   it("keeping the server value is a no-op", async () => {
     const supabase = makeSupabaseStub({});
-    const { resolved } = await resolveConflict(supabase as never, "attendance", "server", {
+    const { resolved } = await resolveConflict(supabase as never, SCHOOL, "attendance", "server", {
       table: "attendance",
       key: {},
       client: {},
@@ -219,7 +239,7 @@ describe("resolveConflict", () => {
     const supabase = makeSupabaseStub({
       attendance_records: [{ data: null, error: null }],
     });
-    const { resolved } = await resolveConflict(supabase as never, "attendance", "client", {
+    const { resolved } = await resolveConflict(supabase as never, SCHOOL, "attendance", "client", {
       table: "attendance",
       key: {},
       client: { status: "present" },
@@ -231,7 +251,7 @@ describe("resolveConflict", () => {
 
   it("rejects invalid client values instead of writing them", async () => {
     const supabase = makeSupabaseStub({});
-    const { resolved } = await resolveConflict(supabase as never, "marks", "client", {
+    const { resolved } = await resolveConflict(supabase as never, SCHOOL, "marks", "client", {
       table: "marks",
       key: {},
       client: { score: 999 },
@@ -239,5 +259,59 @@ describe("resolveConflict", () => {
     });
     expect(resolved).toBe(false);
     expect(supabase.from("exam_results").update).not.toHaveBeenCalled();
+  });
+
+  it("scopes the attendance write to the active school", async () => {
+    const supabase = makeSupabaseStub({
+      attendance_records: [{ data: null, error: null }],
+    });
+    await resolveConflict(supabase as never, SCHOOL, "attendance", "client", {
+      table: "attendance",
+      key: {},
+      client: { status: "present" },
+      server: { id: "srv-1" },
+    });
+
+    // The server row id arrives from the browser, so the update must also be
+    // filtered by school_id — otherwise a crafted payload could aim the write
+    // at any row in the instance.
+    const builder = supabase.from("attendance_records");
+    expect(builder.update).toHaveBeenCalledWith({ status: "present" });
+    expect(builder.eq).toHaveBeenCalledWith("id", "srv-1");
+    expect(builder.eq).toHaveBeenCalledWith("school_id", SCHOOL);
+  });
+
+  it("refuses to amend a mark belonging to another school", async () => {
+    // The ownership lookup finds no exam_results row in this school.
+    const supabase = makeSupabaseStub({
+      exam_results: [{ data: null, error: null }],
+    });
+    const { resolved } = await resolveConflict(supabase as never, SCHOOL, "marks", "client", {
+      table: "marks",
+      key: {},
+      client: { score: 90 },
+      server: { id: "srv-OTHER-SCHOOL" },
+    });
+
+    expect(resolved).toBe(false);
+    expect(supabase.from("exam_results").update).not.toHaveBeenCalled();
+  });
+
+  it("amends a mark once the exam is confirmed to be in the active school", async () => {
+    const supabase = makeSupabaseStub({
+      exam_results: [
+        { data: { id: "srv-1", exam_id: "e1", exams: { school_id: SCHOOL } }, error: null },
+        { data: null, error: null }, // update response
+      ],
+    });
+    const { resolved } = await resolveConflict(supabase as never, SCHOOL, "marks", "client", {
+      table: "marks",
+      key: {},
+      client: { score: 90 },
+      server: { id: "srv-1" },
+    });
+
+    expect(resolved).toBe(true);
+    expect(supabase.from("exam_results").update).toHaveBeenCalledWith({ score: 90 });
   });
 });

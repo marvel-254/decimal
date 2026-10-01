@@ -1,4 +1,4 @@
-name: Apply tuition migrations
+name: Apply database migrations
 on:
   workflow_dispatch: {}
 
@@ -18,3 +18,25 @@ jobs:
           # accept it alongside the legacy per-school super_admin membership.
           # Idempotent — safe to re-run.
           psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/032_platform_admin.sql
+          # Critical data-integrity fixes found by the completion audit:
+          # 033 seeds the core RBAC permission matrix — has_permission() returned
+          #      false for every core resource, so all non-platform-admin roles
+          #      were denied on /api/students, /api/student-accounts,
+          #      /api/fee-structures and all /api/billing/* routes.
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/033_rbac_core_permissions.sql
+          # 034 adds payments.payment_method / invoice_id / recorded_at and
+          #      backfills invoice_id from the ledger.
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/034_finance_payments_columns.sql
+          # 035 adds messages.sent_at — the service read and ordered by a column
+          #      no migration had ever created.
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/035_messaging_sent_at.sql
+          # 036 adds the UPDATE policies that offline conflict resolution needs;
+          #      both are school-scoped.
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/036_sync_update_policies.sql
+          # 037 adds announcements.target_audience and enforces targeting in RLS.
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/037_announcements_target_audience.sql
+          # 038 adds 'rejected' to school_status — the super admin UI sent it but
+          #      the enum had no such value.
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/038_school_status_rejected.sql
+          # 039 removes ai/website_builder from the paid plan matrices.
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/039_billing_drop_unbuilt_features.sql

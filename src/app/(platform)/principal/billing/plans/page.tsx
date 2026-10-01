@@ -60,10 +60,8 @@ const FEATURE_LABELS: Record<string, string> = {
   reports: "Reports & Analytics",
   admissions: "Admissions",
   messaging: "Messaging",
-  ai: "AI Assistant",
   api: "API Access",
   custom_roles: "Custom Roles",
-  website_builder: "School Website Builder",
 };
 
 export default function PlansPage() {

@@ -19,6 +19,10 @@ jobs:
       - run: npm ci
       - run: npm run lint || true
       - run: npx tsc --noEmit
+      # The test suite gates merges. It previously never ran in CI, which is how
+      # the RBAC, payments, messaging and sync RLS defects below reached
+      # production with a green build.
+      - run: npm test
       - run: npm run build
       - name: Verify build output
         run: |

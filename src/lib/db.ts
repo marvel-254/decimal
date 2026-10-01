@@ -93,11 +93,15 @@ function getDB() {
 }
 
 // Attendance operations
+//
+// The record is queued implicitly: it lands in the `attendance` store with
+// synced = 0 and syncPendingData drains that store through the by-synced
+// index. It used to ALSO push an explicit row into "sync-queue", which
+// double-sent every record on the weakest connections.
 export async function saveAttendance(record: OfflineAttendance) {
   const db = await getDB();
   const stamped = { ...record, _synced_at: new Date().toISOString() };
   await db.put("attendance", stamped);
-  await addToSyncQueue("attendance", "insert", stamped as unknown as Record<string, unknown>);
 }
 
 export async function getUnsyncedAttendance() {
@@ -123,7 +127,6 @@ export async function saveMark(record: OfflineMark) {
   const db = await getDB();
   const stamped = { ...record, _synced_at: new Date().toISOString() };
   await db.put("marks", stamped);
-  await addToSyncQueue("marks", "insert", stamped as unknown as Record<string, unknown>);
 }
 
 export async function getUnsyncedMarks() {
@@ -211,17 +214,12 @@ export async function removeConflict(id: string) {
 }
 
 // Sync queue
-async function addToSyncQueue(table: string, operation: "insert" | "update" | "delete", data: Record<string, unknown>) {
-  const db = await getDB();
-  await db.put("sync-queue", {
-    id: `${table}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-    table,
-    operation,
-    data,
-    created_at: new Date().toISOString(),
-    retries: 0,
-  });
-}
+//
+// Legacy queue, retained so the IndexedDB schema version stays valid for
+// existing installs. Nothing enqueues here any more: saveAttendance/saveMark
+// queue implicitly via the attendance/marks `by-synced` indexes, and the old
+// explicit pushes double-sent every record using a payload shape the sync
+// endpoints reject — so this queue never drained and the badge never cleared.
 
 export async function getSyncQueue() {
   const db = await getDB();
@@ -238,7 +236,19 @@ export async function clearSyncQueue() {
   await db.clear("sync-queue");
 }
 
-export async function getSyncQueueCount() {
+/**
+ * Number of records still waiting to reach the server.
+ *
+ * Counts unsynced attendance and marks — the real backlog — plus anything left
+ * in the legacy sync-queue, so the header badge reflects pending work instead
+ * of an always-empty store.
+ */
+export async function getSyncQueueCount(): Promise<number> {
   const db = await getDB();
-  return db.count("sync-queue");
+  const [attendance, marks, queued] = await Promise.all([
+    db.countFromIndex("attendance", "by-synced", IDBKeyRange.only(0)),
+    db.countFromIndex("marks", "by-synced", IDBKeyRange.only(0)),
+    db.count("sync-queue"),
+  ]);
+  return attendance + marks + queued;
 }

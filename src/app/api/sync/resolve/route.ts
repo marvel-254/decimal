@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { resolveConflict } from "@/lib/services/sync";
+import { requireSchoolContext } from "@/lib/services/tenant";
 
 /**
  * Resolve a sync conflict reported by the client.
@@ -34,7 +35,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { resolved } = await resolveConflict(supabase, table, choice, conflict);
+    // The conflict payload's server row id comes from the browser, so the
+    // write must be scoped to the caller's active school rather than relying
+    // on the id alone.
+    const { schoolId } = await requireSchoolContext(user.id);
+    const { resolved } = await resolveConflict(supabase, schoolId, table, choice, conflict);
     if (!resolved) return NextResponse.json({ error: "Invalid conflict payload" }, { status: 400 });
     return NextResponse.json({ ok: true });
   } catch (err) {

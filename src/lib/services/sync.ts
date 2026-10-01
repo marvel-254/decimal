@@ -158,6 +158,9 @@ export async function syncAttendanceRecords(
 
     if (clientEditedAt > serverUpdatedAt) {
       // Client edited after the server's last change — client wins.
+      // Scope by school_id as well as id: `server.id` came back from a
+      // school-filtered select, but re-asserting it here means a widened RLS
+      // policy can never turn this into a cross-tenant write.
       const { error } = await supabase
         .from("attendance_records")
         .update({
@@ -165,7 +168,8 @@ export async function syncAttendanceRecords(
           notes: typeof r.notes === "string" ? r.notes : server.notes,
           class_id: typeof r.class_id === "string" ? r.class_id : server.class_id,
         })
-        .eq("id", server.id);
+        .eq("id", server.id)
+        .eq("school_id", schoolId);
       if (error) throw new Error(error.message);
       existingByKey.set(key, { ...server, status: r.status });
       synced++;
@@ -209,11 +213,31 @@ export async function syncMarkRecords(
 
   const examIds = [...new Set(records.map((r) => r.exam_id))];
   const existingByKey = new Map<string, MarkRow>();
+  // exam_ids that actually belong to the active school. A record naming an
+  // exam from another school must be dropped, not inserted — otherwise the
+  // insert branch below would try to write a cross-tenant result and rely on
+  // RLS alone to stop it.
+  const allowedExamIds = new Set<string>();
   if (examIds.length > 0) {
+    const { data: exams, error: examsError } = await supabase
+      .from("exams")
+      .select("id")
+      .eq("school_id", schoolId)
+      .in("id", examIds);
+    // Surface a failed lookup rather than dropping records: these stay queued
+    // for the next attempt instead of being discarded as cross-tenant.
+    if (examsError) throw new Error(examsError.message);
+    for (const exam of (exams ?? []) as { id: string }[]) {
+      allowedExamIds.add(exam.id);
+    }
+
+    // Join through exams so the read is scoped to the active school —
+    // exam_results itself has no school_id column.
     const { data } = await supabase
       .from("exam_results")
-      .select("id, exam_id, student_id, subject_id, score, updated_at")
-      .in("exam_id", examIds);
+      .select("id, exam_id, student_id, subject_id, score, updated_at, exams!inner(school_id)")
+      .in("exam_id", examIds)
+      .eq("exams.school_id", schoolId);
     for (const row of (data ?? []) as MarkRow[]) {
       existingByKey.set(`${row.exam_id}|${row.student_id}|${row.subject_id}`, row);
     }
@@ -224,6 +248,13 @@ export async function syncMarkRecords(
   let synced = 0;
 
   for (const r of records) {
+    // Same cross-tenant guard as attendance: a record naming an exam the
+    // active school does not own must be dropped, never inserted.
+    if (!allowedExamIds.has(r.exam_id)) {
+      skipped++;
+      continue;
+    }
+
     const key = `${r.exam_id}|${r.student_id}|${r.subject_id}`;
     const server = existingByKey.get(key);
 
@@ -273,9 +304,14 @@ export async function syncMarkRecords(
 /**
  * Resolve a conflict: "server" keeps the server value (client just forgets its
  * local edit), "client" overwrites the server row with the client's value.
+ *
+ * `schoolId` is required and every write is scoped to it. `conflict.server.id`
+ * arrives from the browser, so without this a crafted payload could aim the
+ * update at any row in the instance — the write would be blocked only by RLS.
  */
 export async function resolveConflict(
   supabase: SupabaseClient,
+  schoolId: string,
   table: "attendance" | "marks",
   choice: "server" | "client",
   conflict: SyncConflict
@@ -291,7 +327,8 @@ export async function resolveConflict(
     const { error } = await supabase
       .from("attendance_records")
       .update({ status })
-      .eq("id", serverId);
+      .eq("id", serverId)
+      .eq("school_id", schoolId);
     if (error) throw new Error(error.message);
     return { resolved: true };
   }
@@ -301,6 +338,19 @@ export async function resolveConflict(
   if (typeof score !== "number" || score < 0 || score > 100 || typeof serverId !== "string") {
     return { resolved: false };
   }
+
+  // exam_results carries no school_id — tenancy runs through exams.school_id.
+  // Resolve the owning exam first so the update below can be school-scoped.
+  const { data: result, error: lookupError } = await supabase
+    .from("exam_results")
+    .select("id, exam_id, exams!inner(school_id)")
+    .eq("id", serverId)
+    .eq("exams.school_id", schoolId)
+    .maybeSingle();
+
+  if (lookupError) throw new Error(lookupError.message);
+  if (!result) return { resolved: false };
+
   const { error } = await supabase.from("exam_results").update({ score }).eq("id", serverId);
   if (error) throw new Error(error.message);
   return { resolved: true };

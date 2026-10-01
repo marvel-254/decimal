@@ -68,14 +68,18 @@ export async function syncPendingData(): Promise<{ synced: number; failed: numbe
       }
     }
 
-    // Process sync queue
+// Drain any legacy sync-queue rows left by older builds. Nothing enqueues
+    // here now — see the note in db.ts — but existing installs may still hold
+    // entries, and those would otherwise pin the header badge forever.
     const queue = await getSyncQueue();
     for (const item of queue) {
       try {
+        // The sync endpoints take { records: [...] }; the legacy queue stored
+        // a single record.
         const res = await fetch(`/api/sync/${item.table}`, {
-          method: item.operation === "delete" ? "DELETE" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(item.data),
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ records: [item.data] }),
         });
         if (res.ok) {
           await removeSyncQueueItem(item.id);
