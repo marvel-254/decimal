@@ -1,0 +1,333 @@
+{
+  "activity_fields": [
+    "Teacher",
+    "Subject",
+    "Activity_Tag",
+    "Students",
+    "Duration",
+    "Total_Duration",
+    "Id",
+    "Activity_Group_Id",
+    "Active",
+    "Comments"
+  ],
+  "constraint_types": [
+    "BasicCompulsoryTime",
+    "BasicCompulsorySpace",
+    "BreakTimes",
+    "ActivityEndsStudentsDay",
+    "ActivitiesEndStudentsDay",
+    "ActivityPreferredRoom",
+    "ActivityPreferredRooms",
+    "ActivityPreferredTimeSlots",
+    "ActivityPreferredStartingTime",
+    "ActivityPreferredStartingTimes",
+    "ActivitiesPreferredTimeSlots",
+    "ActivitiesPreferredStartingTimes",
+    "ActivitiesSameStartingTime",
+    "ActivitiesNotOverlapping",
+    "ActivitiesSameStartingDay",
+    "ActivitiesSameStartingHour",
+    "ActivitiesSameRoomIfConsecutive",
+    "TwoActivitiesConsecutive",
+    "TwoActivitiesOrdered",
+    "TwoActivitiesGrouped",
+    "ThreeActivitiesGrouped",
+    "MinDaysBetweenActivities",
+    "MinGapsBetweenActivities",
+    "MaxDaysBetweenActivities",
+    "ActivitiesOccupyMaxTimeSlotsFromSelection",
+    "ActivitiesOccupyMaxDifferentRooms",
+    "ActivitiesMaxSimultaneousInSelectedTimeSlots",
+    "ActivityTagPreferredRoom",
+    "ActivityTagPreferredRooms",
+    "SubjectPreferredRoom",
+    "SubjectPreferredRooms",
+    "SubjectActivityTagPreferredRoom",
+    "SubjectActivityTagPreferredRooms",
+    "RoomNotAvailableTimes",
+    "TeacherNotAvailableTimes",
+    "TeacherHomeRoom",
+    "TeacherHomeRooms",
+    "TeacherMaxDaysPerWeek",
+    "TeachersMaxDaysPerWeek",
+    "TeacherMinDaysPerWeek",
+    "TeachersMinDaysPerWeek",
+    "TeacherMaxGapsPerDay",
+    "TeachersMaxGapsPerDay",
+    "TeacherMaxGapsPerWeek",
+    "TeachersMaxGapsPerWeek",
+    "TeacherMinGapsBetweenBuildingChanges",
+    "TeachersMinGapsBetweenBuildingChanges",
+    "TeacherMaxHoursDaily",
+    "TeachersMaxHoursDaily",
+    "TeacherMaxHoursContinuously",
+    "TeachersMaxHoursContinuously",
+    "TeacherMinHoursDaily",
+    "TeachersMinHoursDaily",
+    "TeacherMaxBuildingChangesPerDay",
+    "TeachersMaxBuildingChangesPerDay",
+    "TeacherMaxBuildingChangesPerWeek",
+    "TeachersMaxBuildingChangesPerWeek",
+    "TeacherActivityTagMaxHoursDaily",
+    "TeachersActivityTagMaxHoursDaily",
+    "TeacherActivityTagMaxHoursContinuously",
+    "TeachersActivityTagMaxHoursContinuously",
+    "TeacherIntervalMaxDaysPerWeek",
+    "TeachersIntervalMaxDaysPerWeek",
+    "StudentsEarlyMaxBeginningsAtSecondHour",
+    "StudentsSetEarlyMaxBeginningsAtSecondHour",
+    "StudentsSetNotAvailableTimes",
+    "StudentsMaxGapsPerDay",
+    "StudentsSetMaxGapsPerDay",
+    "StudentsMaxGapsPerWeek",
+    "StudentsSetMaxGapsPerWeek",
+    "StudentsMaxHoursDaily",
+    "StudentsSetMaxHoursDaily",
+    "StudentsMaxHoursContinuously",
+    "StudentsSetMaxHoursContinuously",
+    "StudentsMinHoursDaily",
+    "StudentsSetMinHoursDaily",
+    "StudentsMaxDaysPerWeek",
+    "StudentsSetMaxDaysPerWeek",
+    "StudentsMaxBuildingChangesPerDay",
+    "StudentsSetMaxBuildingChangesPerDay",
+    "StudentsMaxBuildingChangesPerWeek",
+    "StudentsSetMaxBuildingChangesPerWeek",
+    "StudentsMinGapsBetweenBuildingChanges",
+    "StudentsSetMinGapsBetweenBuildingChanges",
+    "StudentsSetHomeRoom",
+    "StudentsSetHomeRooms",
+    "StudentsActivityTagMaxHoursDaily",
+    "StudentsSetActivityTagMaxHoursDaily",
+    "StudentsActivityTagMaxHoursContinuously",
+    "StudentsSetActivityTagMaxHoursContinuously",
+    "StudentsIntervalMaxDaysPerWeek",
+    "StudentsSetIntervalMaxDaysPerWeek",
+    "SubactivitiesPreferredTimeSlots",
+    "SubactivitiesPreferredStartingTimes"
+  ],
+  "data_model_classes": {
+    "Activity": {
+      "fields": [
+        "teachersNames (QStringList)",
+        "subjectName (QString)",
+        "activityTagsNames (QStringList)",
+        "studentsNames (QStringList)",
+        "duration (int)",
+        "totalDuration (int)",
+        "id (int)",
+        "activityGroupId (int)",
+        "nTotalStudents (int)",
+        "computeNTotalStudents (bool)",
+        "active (bool)",
+        "comments (QString)",
+        "iTeachersList (QList<int>)",
+        "subjectIndex (int)",
+        "iActivityTagsSet (QSet<int>)",
+        "iSubgroupsList (QList<int>)"
+      ],
+      "header": "src/engine/activity.h",
+      "xml_element": "Activity"
+    },
+    "ActivityTag": {
+      "fields": [
+        "name (QString)",
+        "comments (QString)"
+      ],
+      "header": "src/engine/activitytag.h",
+      "xml_element": "Activity_Tag"
+    },
+    "Building": {
+      "fields": [
+        "name (QString)",
+        "comments (QString)"
+      ],
+      "header": "src/engine/building.h",
+      "xml_element": "Building"
+    },
+    "Room": {
+      "fields": [
+        "name (QString)",
+        "capacity (int)",
+        "building (QString)",
+        "buildingIndex (int)",
+        "comments (QString)"
+      ],
+      "header": "src/engine/room.h",
+      "xml_element": "Room"
+    },
+    "Rules": {
+      "fields": [
+        "institutionName (QString)",
+        "comments (QString)",
+        "nHoursPerDay (int)",
+        "nDaysPerWeek (int)",
+        "daysOfTheWeek (QString array, MAX_DAYS_PER_WEEK)",
+        "hoursOfTheDay (QString array, MAX_HOURS_PER_DAY)",
+        "nHoursPerWeek (int)",
+        "teachersList (TeachersList)",
+        "subjectsList (SubjectsList)",
+        "activityTagsList (ActivityTagsList)",
+        "yearsList (StudentsYearsList)",
+        "activitiesList (ActivitiesList)",
+        "roomsList (RoomsList)",
+        "buildingsList (BuildingsList)",
+        "timeConstraintsList (TimeConstraintsList)",
+        "spaceConstraintsList (SpaceConstraintsList)",
+        "groupActivitiesInInitialOrderList"
+      ],
+      "header": "src/engine/rules.h",
+      "xml_root": "fet"
+    },
+    "SpaceConstraint": {
+      "fields": [
+        "type (int)",
+        "active (bool)",
+        "comments (QString)",
+        "weight (double)"
+      ],
+      "header": "src/engine/spaceconstraint.h",
+      "xml_list": "Space_Constraints_List"
+    },
+    "StudentsSet": {
+      "fields": [
+        "name (QString)",
+        "numberOfStudents (int)",
+        "type (int: STUDENTS_SET/STUDENTS_YEAR/STUDENTS_GROUP/STUDENTS_SUBGROUP)",
+        "comments (QString)"
+      ],
+      "header": "src/engine/studentsset.h",
+      "xml_element": "Students_List"
+    },
+    "StudentsGroup": {
+      "base": "StudentsSet",
+      "fields": [
+        "groupsList (subgroupsList) (StudentsSubgroupsList)",
+        "indexInInternalGroupsList (int)"
+      ],
+      "header": "src/engine/studentsset.h",
+      "xml_element": "Group"
+    },
+    "StudentsSubgroup": {
+      "base": "StudentsSet",
+      "fields": [
+        "indexInInternalSubgroupsList (int)",
+        "activitiesForSubgroup (QList<int>)"
+      ],
+      "header": "src/engine/studentsset.h",
+      "xml_element": "Subgroup"
+    },
+    "StudentsYear": {
+      "base": "StudentsSet",
+      "fields": [
+        "groupsList (StudentsGroupsList)",
+        "indexInAugmentedYearsList (int)"
+      ],
+      "header": "src/engine/studentsset.h",
+      "xml_element": "Year"
+    },
+    "Subject": {
+      "fields": [
+        "name (QString)",
+        "comments (QString)"
+      ],
+      "header": "src/engine/subject.h",
+      "xml_element": "Subject"
+    },
+    "Teacher": {
+      "fields": [
+        "name (QString)",
+        "targetNumberOfHours (int)",
+        "comments (QString)",
+        "qualifiedSubjectsList (QLinkedList<QString>)",
+        "activitiesForTeacher (QList<int>)"
+      ],
+      "header": "src/engine/teacher.h",
+      "xml_element": "Teacher"
+    },
+    "TimeConstraint": {
+      "fields": [
+        "type (int)",
+        "active (bool)",
+        "comments (QString)",
+        "weight (double)"
+      ],
+      "header": "src/engine/timeconstraint.h",
+      "xml_list": "Time_Constraints_List"
+    },
+    "Timetable": {
+      "fields": [
+        "rules (Rules)"
+      ],
+      "header": "src/engine/timetable.h",
+      "description": "Main interface class; wraps a single Rules instance"
+    }
+  },
+  "period_fields": [
+    "Number_of_Hours",
+    "Name"
+  ],
+  "room_fields": [
+    "Name",
+    "Building",
+    "Capacity",
+    "Comments"
+  ],
+  "student_fields": [
+    "Name",
+    "Number_of_Students",
+    "Comments",
+    "Groups_List",
+    "Group.Name",
+    "Group.Number_of_Students",
+    "Group.Comments",
+    "Group.Subgroups_List",
+    "Subgroup.Name",
+    "Subgroup.Number_of_Students",
+    "Subgroup.Comments"
+  ],
+  "subject_fields": [
+    "Name",
+    "Comments"
+  ],
+  "teacher_fields": [
+    "Name",
+    "Target_Number_of_Hours",
+    "Qualified_Subjects",
+    "Qualified_Subject",
+    "Comments"
+  ],
+  "time_constraint_fields": [
+    "Weight_Percentage",
+    "Active",
+    "Comments"
+  ],
+  "xml_schema_files": [
+    "/home/marvel/fet/src/engine/rules.h",
+    "/home/marvel/fet/src/engine/timetable.h",
+    "/home/marvel/fet/src/engine/activity.h",
+    "/home/marvel/fet/src/engine/teacher.h",
+    "/home/marvel/fet/src/engine/subject.h",
+    "/home/marvel/fet/src/engine/studentsset.h",
+    "/home/marvel/fet/src/engine/room.h",
+    "/home/marvel/fet/src/engine/building.h",
+    "/home/marvel/fet/src/engine/activitytag.h",
+    "/home/marvel/fet/src/engine/timeconstraint.h",
+    "/home/marvel/fet/src/engine/spaceconstraint.h",
+    "/home/marvel/fet/src/engine/rules.cpp",
+    "/home/marvel/fet/src/engine/activity.cpp",
+    "/home/marvel/fet/src/engine/teacher.cpp",
+    "/home/marvel/fet/src/engine/subject.cpp",
+    "/home/marvel/fet/src/engine/studentsset.cpp",
+    "/home/marvel/fet/src/engine/room.cpp",
+    "/home/marvel/fet/src/engine/building.cpp",
+    "/home/marvel/fet/src/engine/activitytag.cpp",
+    "/home/marvel/fet/src/engine/timeconstraint.cpp",
+    "/home/marvel/fet/src/engine/spaceconstraint.cpp",
+    "/home/marvel/fet/src/engine/import.cpp",
+    "/home/marvel/fet/examples/Argentina/Horario_ISJ.fet",
+    "/home/marvel/fet/examples/Morocco/Hadkourt/lycee-Farabi.fet",
+    "/home/marvel/fet/translations/test-all-constraints.fet"
+  ]
+}

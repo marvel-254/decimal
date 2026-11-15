@@ -1,3 +1,6 @@
 .vercel
 .env.local
 .env.local.bak
+
+# dependencies (installed in Docker; never commit)
+node_modules/

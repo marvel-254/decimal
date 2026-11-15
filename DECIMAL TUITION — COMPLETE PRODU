@@ -1,0 +1,2010 @@
+# DECIMAL TUITION — COMPLETE PRODUCT WIREFRAME, UX & UI SYSTEM
+
+You are a **senior product designer, UX architect, information architect, design-system specialist, and SaaS product strategist**.
+
+You are working on the existing **Decimal** school management platform.
+
+Your task is to design a **complete, production-ready wireframe and UX specification for Decimal Tuition**.
+
+Do NOT treat Tuition as a small feature inside School Management.
+
+Treat it as a **major product/domain within Decimal**, sharing the existing Decimal identity, authentication, schools, students, teachers, permissions, billing, and platform infrastructure while providing its own learning experience.
+
+---
+
+# 1. FIRST: INSPECT THE EXISTING DECIMAL PRODUCT
+
+Before designing anything:
+
+1. Inspect the existing repository.
+2. Inspect the current frontend architecture.
+3. Inspect existing routes.
+4. Inspect existing components.
+5. Inspect existing layouts.
+6. Inspect the existing design system.
+7. Inspect typography.
+8. Inspect colors.
+9. Inspect spacing.
+10. Inspect buttons, cards, tables, forms, modals, dropdowns and navigation.
+11. Inspect authentication and role handling.
+12. Inspect Supabase schema and existing school-management entities.
+13. Inspect the existing dashboard experience.
+14. Inspect existing responsive behavior.
+
+Do not blindly replace existing Decimal design language.
+
+The new Tuition experience should feel like it belongs to Decimal.
+
+However, Tuition should have enough visual distinction that users immediately understand:
+
+> "I am now inside Decimal Tuition."
+
+If the existing design system is weak or inconsistent, improve it systematically rather than creating isolated one-off designs.
+
+---
+
+# 2. PRODUCT VISION
+
+Decimal should evolve into:
+
+> **A Digital Education Operating System for schools, teachers and learners.**
+
+The product has two major domains:
+
+DECIMAL
+
+├── School Management
+│   ├── Dashboard
+│   ├── Students
+│   ├── Staff
+│   ├── Admissions
+│   ├── Attendance
+│   ├── Fees
+│   ├── Timetable
+│   ├── School Exams
+│   └── Administration
+│
+└── Tuition
+├── Learn
+├── Teach
+├── Assess
+├── Activities
+└── Network
+
+School Management answers:
+
+> "How do I run my school?"
+
+Tuition answers:
+
+> "How do I teach, learn, assess and participate?"
+
+---
+
+# 3. CORE TUITION CONCEPT
+
+Do NOT design Tuition around only "courses".
+
+The primary content abstraction should be:
+
+# PROGRAMME
+
+A Programme may represent:
+
+* Academic course
+* Revision programme
+* Remedial programme
+* Exam preparation
+* Club
+* Sports programme
+* Music programme
+* Drama programme
+* Debate programme
+* Science programme
+* Technology programme
+* Competition
+* Leadership programme
+* Holiday programme
+* Teacher-created learning programme
+* School programme
+* Network-wide programme
+
+A Programme can contain:
+
+Programme
+├── Modules
+│   ├── Lessons
+│   ├── Resources
+│   ├── Assignments
+│   ├── Quizzes
+│   └── Assessments
+│
+├── Instructors
+├── Students
+├── Cohorts
+├── Live Classes
+└── Activities / Events
+
+---
+
+# 4. BRANDING DIRECTION
+
+Use the existing Decimal brand as the foundation.
+
+Do NOT invent a completely unrelated brand.
+
+Create a coherent:
+
+## Decimal Tuition Design Language
+
+The visual system should communicate:
+
+* Education
+* Intelligence
+* Trust
+* Modern technology
+* Progress
+* Academic excellence
+* Collaboration
+* Accessibility
+* Youthfulness without looking childish
+* Professionalism
+* African/Kenyan educational context without relying on clichés
+
+The interface should feel appropriate for:
+
+* Students
+* Teachers
+* Parents
+* School administrators
+* Principals
+* Education organizations
+* Network administrators
+
+Avoid:
+
+* overly childish school graphics
+* excessive gradients
+* generic AI aesthetics
+* excessive glassmorphism
+* clutter
+* excessive rounded cards
+* decorative elements that reduce usability
+* dashboard designs where everything is a card
+
+Prioritize:
+
+* information hierarchy
+* whitespace
+* typography
+* accessibility
+* clear navigation
+* strong interaction patterns
+* excellent tables
+* clear forms
+* useful dashboards
+* consistent components
+
+---
+
+# 5. CREATE A COMPLETE DESIGN SYSTEM
+
+Before designing individual pages, define the wireframe-level design system.
+
+Document:
+
+## Typography
+
+Define:
+
+* Display
+* H1
+* H2
+* H3
+* H4
+* Body
+* Body small
+* Caption
+* Label
+* Navigation
+* Table text
+* Code/technical text
+
+Define:
+
+* font family
+* font weights
+* sizes
+* line heights
+* letter spacing
+
+## Color System
+
+Define:
+
+* Primary
+* Primary foreground
+* Secondary
+* Accent
+* Background
+* Surface
+* Elevated surface
+* Border
+* Muted
+* Text
+* Text secondary
+* Success
+* Warning
+* Error
+* Info
+
+Also define semantic colors for:
+
+* Learning
+* Assessments
+* Activities
+* Network
+* Live classes
+* Progress
+
+Do not overuse color.
+
+## Spacing
+
+Define a consistent spacing scale.
+
+## Radius
+
+Define:
+
+* buttons
+* cards
+* inputs
+* modals
+* badges
+* containers
+
+## Shadows
+
+Define levels:
+
+* none
+* subtle
+* elevated
+* modal
+
+## Icons
+
+Specify icon style and usage rules.
+
+## Buttons
+
+Define:
+
+* primary
+* secondary
+* tertiary
+* destructive
+* ghost
+* icon button
+* loading
+* disabled
+
+## Forms
+
+Define:
+
+* text inputs
+* textarea
+* select
+* multi-select
+* search
+* date picker
+* file upload
+* rich text editor
+* checkbox
+* radio
+* toggle
+* slider
+
+## Feedback
+
+Define:
+
+* toast
+* alert
+* confirmation
+* warning
+* error
+* success
+* inline validation
+
+---
+
+# 6. INFORMATION ARCHITECTURE
+
+Create the complete Tuition information architecture.
+
+## STUDENT
+
+Home
+Explore
+My Learning
+Classes
+Assessments
+Activities
+Progress
+Achievements
+Certificates
+Profile
+Notifications
+Settings
+
+## TEACHER
+
+Dashboard
+My Programmes
+Content Library
+Students
+Assignments
+Assessments
+Question Bank
+Live Classes
+Activities
+Analytics
+Messages
+Profile
+Settings
+
+## SCHOOL ADMIN / PRINCIPAL
+
+Dashboard
+Programmes
+Teachers
+Students
+Enrolments
+Assessments
+Activities
+Events
+Network
+Analytics
+Settings
+
+## PLATFORM ADMIN
+
+Dashboard
+Schools
+Teachers
+Students
+Programmes
+Assessments
+Network
+Activities
+Moderation
+Content
+Analytics
+Platform
+Settings
+
+---
+
+# 7. COMPLETE SCREEN INVENTORY
+
+Design and document EVERY important screen.
+
+Do not stop at dashboards.
+
+For every screen define:
+
+* purpose
+* target user
+* route
+* navigation position
+* page hierarchy
+* components
+* actions
+* data displayed
+* filters
+* search
+* sorting
+* pagination
+* permissions
+* empty state
+* loading state
+* error state
+* success state
+* responsive behavior
+* mobile behavior
+
+---
+
+# 8. STUDENT EXPERIENCE
+
+Design all of the following.
+
+## 8.1 Student Onboarding
+
+Screens:
+
+1. Welcome
+2. Account creation
+3. Login
+4. School selection
+5. Student profile setup
+6. Grade/class selection
+7. Subject interests
+8. Learning goals
+9. Recommended programmes
+10. Completed onboarding
+
+---
+
+# 9. STUDENT HOME
+
+Create a detailed student dashboard.
+
+Include:
+
+* greeting
+* profile
+* current programme
+* continue learning
+* progress percentage
+* upcoming lesson
+* upcoming assignment
+* upcoming assessment
+* upcoming live class
+* recommended programmes
+* recommended activities
+* recent achievements
+* learning streak
+* subject progress
+* announcements
+* quick actions
+
+The dashboard should answer:
+
+1. What should I do now?
+2. What do I need to finish?
+3. What is coming next?
+4. What should I learn?
+5. How am I progressing?
+
+---
+
+# 10. EXPLORE
+
+Design:
+
+* Explore home
+* Search
+* Search results
+* Subject browsing
+* Grade browsing
+* Teacher browsing
+* Programme browsing
+* Activities browsing
+* Featured programmes
+* Recommended programmes
+* Trending programmes
+* Network programmes
+
+Filters:
+
+* grade
+* subject
+* curriculum
+* programme type
+* teacher
+* school
+* duration
+* difficulty
+* rating
+* availability
+
+---
+
+# 11. PROGRAMME DETAIL
+
+Create a complete programme detail page.
+
+Example:
+
+ALGEBRA MASTERY
+
+Show:
+
+* programme title
+* cover
+* teacher
+* school
+* rating
+* students
+* duration
+* level
+* subject
+* curriculum
+* description
+* learning outcomes
+* modules
+* lessons
+* resources
+* assignments
+* assessments
+* prerequisites
+* reviews
+* related programmes
+
+Primary actions:
+
+* Start Learning
+* Enrol
+* Continue
+* Save
+* Share
+
+---
+
+# 12. LEARNING PLAYER
+
+Design the actual lesson experience.
+
+Desktop:
+
+LEFT:
+Programme structure
+
+CENTER:
+Lesson content
+
+RIGHT:
+Progress/resources/notes
+
+Include:
+
+* video
+* audio
+* document
+* text lesson
+* presentation
+* embedded resource
+* lesson notes
+* downloads
+* bookmarks
+* discussion
+* previous lesson
+* next lesson
+* mark complete
+* progress indicator
+
+Also design:
+
+* video loading
+* video error
+* offline state
+* completed lesson
+* locked lesson
+
+---
+
+# 13. ASSIGNMENTS
+
+Design:
+
+* assignment list
+* assignment detail
+* assignment instructions
+* submission screen
+* file upload
+* text submission
+* deadline
+* draft submission
+* submitted state
+* late submission
+* teacher feedback
+* grade/result
+
+---
+
+# 14. STUDENT ASSESSMENTS
+
+Screens:
+
+* assessment dashboard
+* upcoming assessments
+* available assessments
+* assessment instructions
+* exam start confirmation
+* assessment interface
+* question navigation
+* timer
+* question flagging
+* autosave indicator
+* submission confirmation
+* result
+* answer review
+* topic analysis
+* performance history
+
+Question types:
+
+* MCQ
+* multiple select
+* true/false
+* short answer
+* structured question
+* essay
+* practical
+
+---
+
+# 15. LIVE CLASSES
+
+Design:
+
+* live classes dashboard
+* upcoming class
+* class details
+* waiting room
+* live classroom
+* video
+* microphone
+* camera
+* screen share
+* chat
+* questions
+* polls
+* whiteboard
+* participants
+* attendance
+* recording
+* post-class summary
+
+Do not build the video infrastructure into the wireframe architecture as a hard dependency.
+
+Design it so the underlying provider can later be replaced.
+
+---
+
+# 16. ACTIVITIES
+
+Activities are first-class objects.
+
+Create:
+
+Activities
+
+├── Sports
+├── Music
+├── Drama
+├── Clubs
+├── Debate
+├── Competitions
+└── Events
+
+Design:
+
+* activity discovery
+* activity detail
+* registration
+* participant list
+* team selection
+* event schedule
+* fixtures
+* results
+* standings
+* leaderboard
+* achievements
+* certificates
+
+Example:
+
+DECIMAL SCHOOLS FOOTBALL LEAGUE
+
+Show:
+
+* participating schools
+* teams
+* fixtures
+* results
+* standings
+* venues
+* upcoming matches
+* top performers
+
+---
+
+# 17. TEACHER EXPERIENCE
+
+Create a completely different teacher workspace.
+
+Teacher navigation:
+
+Dashboard
+My Programmes
+Content
+Students
+Assignments
+Assessments
+Question Bank
+Live Classes
+Activities
+Analytics
+Profile
+
+---
+
+# 18. TEACHER DASHBOARD
+
+Include:
+
+* students
+* active programmes
+* assignments
+* assessments
+* upcoming classes
+* student performance
+* completion rates
+* struggling students
+* recent activity
+* quick actions
+
+Quick actions:
+
+Create Programme
+Create Lesson
+Create Assessment
+Create Assignment
+Schedule Class
+Create Activity
+
+---
+
+# 19. PROGRAMME BUILDER
+
+This is one of the most important screens.
+
+Create a multi-step creation workflow.
+
+## Step 1 — Details
+
+Fields:
+
+* programme name
+* type
+* description
+* subject
+* grade
+* curriculum
+* difficulty
+* duration
+* thumbnail
+
+## Step 2 — Structure
+
+Create:
+
+* modules
+* lessons
+* sections
+* quizzes
+* assignments
+* assessments
+
+Allow:
+
+* drag and drop
+* reorder
+* duplicate
+* rename
+* delete
+* preview
+
+## Step 3 — Content
+
+Allow:
+
+* video
+* PDF
+* document
+* audio
+* presentation
+* image
+* link
+* text
+* embed
+
+## Step 4 — Access
+
+Options:
+
+* private
+* school
+* selected classes
+* selected students
+* selected schools
+* network
+* public
+
+## Step 5 — Publish
+
+Show:
+
+* validation
+* preview
+* visibility
+* publishing confirmation
+
+---
+
+# 20. CONTENT LIBRARY
+
+Create a reusable teacher content repository.
+
+Screens:
+
+* library
+* search
+* filters
+* folders
+* recent
+* uploads
+* shared resources
+* resource detail
+* upload
+* preview
+
+Resource types:
+
+* video
+* PDF
+* document
+* audio
+* image
+* presentation
+* external link
+
+---
+
+# 21. QUESTION BANK
+
+Create:
+
+* question bank dashboard
+* question list
+* question editor
+* question preview
+* question categories
+* topics
+* difficulty
+* curriculum mapping
+* question usage
+* question analytics
+
+Question metadata:
+
+* grade
+* subject
+* topic
+* strand
+* difficulty
+* marks
+* question type
+* curriculum outcome
+
+---
+
+# 22. ASSESSMENT BUILDER
+
+Create a professional assessment creation experience.
+
+Fields:
+
+* title
+* description
+* grade
+* subject
+* curriculum
+* duration
+* total marks
+* instructions
+* attempt limit
+* randomization
+* availability
+* grading
+
+Question selection:
+
+* existing questions
+* create new
+* question bank
+* AI-assisted future option
+
+Allow:
+
+* drag/reorder
+* sections
+* marks
+* preview
+* publish
+
+---
+
+# 23. TEACHER STUDENT MANAGEMENT
+
+Create:
+
+* student list
+* student profile
+* learning progress
+* assessment performance
+* assignment performance
+* attendance
+* activity participation
+* strengths
+* weaknesses
+* teacher notes
+
+Include intervention recommendations.
+
+---
+
+# 24. TEACHER ANALYTICS
+
+Design analytics dashboards for:
+
+* programme completion
+* lesson completion
+* assessment performance
+* topic weaknesses
+* assignment completion
+* student engagement
+* class performance
+* comparison over time
+
+Use:
+
+* charts
+* tables
+* distributions
+* trends
+* filters
+
+Avoid decorative charts.
+
+Every chart must answer a useful question.
+
+---
+
+# 25. SCHOOL ADMIN EXPERIENCE
+
+Design:
+
+School Tuition Dashboard
+
+Include:
+
+* active programmes
+* teachers
+* enrolled students
+* learning engagement
+* assessments
+* activities
+* live classes
+* network participation
+* performance
+
+---
+
+# 26. SCHOOL PROGRAMME MANAGEMENT
+
+Screens:
+
+* programmes
+* programme detail
+* teacher assignment
+* student enrolment
+* cohorts
+* permissions
+* programme analytics
+
+---
+
+# 27. SCHOOL ASSESSMENT MANAGEMENT
+
+Screens:
+
+* assessments
+* adopted assessments
+* create assessment
+* shared assessments
+* network assessments
+* assessment participation
+* results
+* benchmarking
+* reports
+
+---
+
+# 28. DECIMAL EXAMINATION NETWORK
+
+This is a major differentiator.
+
+Design a network-level assessment ecosystem.
+
+Example:
+
+DECIMAL NETWORK
+
+Grade 8 Mathematics
+Term 2 Common Assessment
+
+183 Schools
+12,842 Students
+
+Show:
+
+* participating schools
+* publisher
+* curriculum
+* grade
+* subject
+* duration
+* marks
+* participation
+* average
+* benchmark
+
+Actions:
+
+* View
+* Adopt
+* Participate
+* Download
+* Results
+
+---
+
+# 29. NETWORK BENCHMARKING
+
+Design:
+
+* school average
+* network average
+* percentile
+* topic performance
+* grade performance
+* historical comparison
+* strengths
+* weaknesses
+
+IMPORTANT:
+
+Never expose identifiable student information between schools.
+
+Only show appropriately aggregated/anonymized benchmarking data.
+
+---
+
+# 30. NETWORK PROGRAMMES
+
+Create:
+
+* programme discovery
+* programme detail
+* school participation
+* network enrolment
+* teacher participation
+* student participation
+
+---
+
+# 31. ACTIVITIES NETWORK
+
+Design network-level:
+
+* competitions
+* sports leagues
+* music festivals
+* drama festivals
+* debate
+* science fairs
+* clubs
+
+Include:
+
+* participating schools
+* schedules
+* venues
+* teams
+* fixtures
+* results
+* rankings
+* awards
+
+---
+
+# 32. PROFILE SYSTEM
+
+Design profiles for:
+
+## Student
+
+* photo
+* name
+* school
+* grade
+* progress
+* achievements
+* certificates
+* programmes
+
+## Teacher
+
+* photo
+* name
+* school
+* subjects
+* grades
+* programmes
+* achievements
+* students
+* ratings
+
+## School
+
+* logo
+* name
+* location
+* education level
+* programmes
+* teachers
+* activities
+* network participation
+
+---
+
+# 33. NOTIFICATIONS
+
+Create:
+
+* notification center
+* unread
+* read
+* assessment reminders
+* assignment reminders
+* class reminders
+* programme updates
+* activity updates
+* network announcements
+
+---
+
+# 34. SEARCH
+
+Create global search.
+
+Search:
+
+* programmes
+* lessons
+* teachers
+* students
+* assessments
+* activities
+* schools
+* resources
+
+Create:
+
+* search overlay
+* search results
+* filters
+* recent searches
+* suggested searches
+* no results
+
+---
+
+# 35. SETTINGS
+
+Design:
+
+Account
+Profile
+Notifications
+Privacy
+Security
+Learning Preferences
+Accessibility
+School Settings
+Tuition Settings
+Permissions
+Integrations
+
+---
+
+# 36. AUTHENTICATION
+
+Design:
+
+* login
+* signup
+* forgot password
+* reset password
+* email verification
+* invitation
+* school invitation
+* role selection
+* account recovery
+* session expired
+
+---
+
+# 37. BILLING
+
+Integrate Tuition into Decimal's existing billing architecture.
+
+Design:
+
+* Tuition plans
+* subscription overview
+* plan comparison
+* usage
+* upgrade
+* downgrade
+* invoices
+* payment state
+* subscription cancellation
+* feature restrictions
+
+Consider:
+
+School Management
++
+Tuition
+=======
+
+Decimal Education Suite
+
+Do not force billing implementation if the existing billing architecture should remain centralized.
+
+---
+
+# 38. EMPTY STATES
+
+Every major screen must have a meaningful empty state.
+
+Examples:
+
+No programmes yet.
+
+No assessments.
+
+No students enrolled.
+
+No resources uploaded.
+
+No upcoming classes.
+
+No network assessments.
+
+No activities.
+
+Empty states should:
+
+1. Explain the situation.
+2. Explain what the user can do.
+3. Provide a relevant CTA.
+
+---
+
+# 39. LOADING STATES
+
+Design:
+
+* skeletons
+* progressive loading
+* button loading
+* table loading
+* card loading
+* page loading
+* video loading
+* assessment loading
+
+---
+
+# 40. ERROR STATES
+
+Design:
+
+* network error
+* permission denied
+* resource unavailable
+* assessment submission failure
+* file upload failure
+* video failure
+* server error
+* invalid form
+* session expired
+
+Every error should explain:
+
+What happened
++
+What the user can do next.
+
+---
+
+# 41. RESPONSIVE DESIGN
+
+Every screen must have:
+
+## Desktop
+
+Primary target.
+
+## Tablet
+
+Adapt:
+
+* sidebar
+* tables
+* cards
+* grids
+* forms
+
+## Mobile
+
+Do not simply shrink desktop.
+
+Redesign interactions where necessary.
+
+Especially:
+
+* student learning
+* assessments
+* live classes
+* programme browsing
+* notifications
+* teacher actions
+
+---
+
+# 42. ACCESSIBILITY
+
+Target WCAG 2.2 AA.
+
+Design for:
+
+* keyboard navigation
+* screen readers
+* focus states
+* color contrast
+* readable typography
+* touch targets
+* reduced motion
+* captions
+* accessible forms
+
+---
+
+# 43. GLOBAL NAVIGATION
+
+Design both:
+
+Desktop navigation
+and
+Mobile navigation.
+
+Desktop:
+
+Logo
+Product switcher
+Main navigation
+Search
+Notifications
+Help
+Profile
+
+Product switcher:
+
+Decimal
+
+School Management
+Tuition
+
+When switching products, maintain context and authentication.
+
+---
+
+# 44. PRODUCT SWITCHER
+
+Create a polished product switcher.
+
+Example:
+
+DECIMAL
+
+School Management
+Run your school
+
+Tuition
+Teach, learn & grow
+
+This should become a central part of the Decimal product architecture.
+
+---
+
+# 45. DESIGN ALL MODALS
+
+Create wireframes for:
+
+* Create Programme
+* Edit Programme
+* Delete Programme
+* Enrol Student
+* Invite Teacher
+* Assign Teacher
+* Create Assessment
+* Publish Assessment
+* Submit Assessment
+* Create Activity
+* Join Programme
+* Leave Programme
+* Upload Resource
+* Share Resource
+* Publish Programme
+* Adopt Network Assessment
+* Create Event
+* Cancel Event
+* Confirm destructive actions
+
+---
+
+# 46. DESIGN ALL DRAWERS
+
+Where appropriate use drawers for:
+
+* filters
+* student details
+* teacher details
+* programme preview
+* notifications
+* quick actions
+* resource preview
+
+---
+
+# 47. TABLE DESIGN
+
+Create a reusable table system.
+
+Support:
+
+* sorting
+* filtering
+* search
+* pagination
+* column visibility
+* bulk actions
+* row actions
+* selection
+* export
+
+Tables must work on mobile through responsive alternatives.
+
+---
+
+# 48. DESIGN TOKENS
+
+Create a complete token specification.
+
+Example:
+
+--color-primary
+--color-background
+--color-surface
+--color-border
+--color-text
+--color-muted
+
+--space-1
+--space-2
+--space-3
+
+--radius-sm
+--radius-md
+--radius-lg
+
+--shadow-sm
+--shadow-md
+
+Use semantic tokens rather than hard-coded values throughout the product.
+
+---
+
+# 49. ROUTE MAP
+
+Create a complete route map.
+
+Example:
+
+/tuition
+/tuition/explore
+/tuition/programmes
+/tuition/programmes/:id
+/tuition/learn/:programmeId/:lessonId
+/tuition/my-learning
+/tuition/assessments
+/tuition/assessments/:id
+/tuition/classes
+/tuition/activities
+/tuition/profile
+
+Teacher:
+
+/tuition/teacher
+/tuition/teacher/programmes
+/tuition/teacher/programmes/new
+/tuition/teacher/programmes/:id/edit
+/tuition/teacher/content
+/tuition/teacher/students
+/tuition/teacher/assessments
+/tuition/teacher/question-bank
+/tuition/teacher/analytics
+
+School:
+
+/tuition/school
+/tuition/school/programmes
+/tuition/school/teachers
+/tuition/school/students
+/tuition/school/assessments
+/tuition/school/activities
+/tuition/school/analytics
+
+Network:
+
+/tuition/network
+/tuition/network/programmes
+/tuition/network/assessments
+/tuition/network/schools
+/tuition/network/activities
+/tuition/network/analytics
+
+Adjust these routes to match the actual Decimal routing architecture.
+
+---
+
+# 50. USER FLOWS
+
+Create detailed flow diagrams for:
+
+### Student
+
+Signup
+→ School
+→ Grade
+→ Explore
+→ Programme
+→ Enrol
+→ Learn
+→ Assignment
+→ Assessment
+→ Result
+→ Progress
+
+### Teacher
+
+Login
+→ Dashboard
+→ Create Programme
+→ Add Modules
+→ Add Lessons
+→ Upload Resources
+→ Publish
+→ Students Enrol
+→ Monitor Progress
+→ Create Assessment
+→ Analyse Results
+
+### School
+
+Login
+→ Tuition
+→ Browse Programme
+→ Assign Teacher
+→ Enrol Students
+→ Monitor
+→ Assess
+→ Analyse
+
+### Network
+
+Create Assessment
+→ Publish
+→ Schools Adopt
+→ Students Participate
+→ Results
+→ Benchmark
+→ Insights
+
+---
+
+# 51. SCREEN SPECIFICATION FORMAT
+
+For EVERY screen provide:
+
+## Screen Name
+
+### Purpose
+
+### User
+
+### Route
+
+### Navigation
+
+### Layout
+
+### Components
+
+### Primary CTA
+
+### Secondary Actions
+
+### Data
+
+### Permissions
+
+### Empty State
+
+### Loading State
+
+### Error State
+
+### Mobile Behavior
+
+### Accessibility
+
+### Related Screens
+
+---
+
+# 52. WIREFRAME FIDELITY
+
+The wireframes must be detailed enough that a frontend engineer can implement them without guessing.
+
+Show:
+
+* exact hierarchy
+* component placement
+* content hierarchy
+* buttons
+* controls
+* tables
+* cards
+* forms
+* navigation
+* filters
+* states
+* responsive behavior
+
+Do NOT create vague boxes labelled:
+
+"Dashboard"
+
+Instead show what actually exists inside the dashboard.
+
+---
+
+# 53. CONTENT STRATEGY
+
+Use realistic Kenyan educational examples.
+
+Use examples such as:
+
+* Mathematics
+* English
+* Kiswahili
+* Biology
+* Chemistry
+* Physics
+* Computer Science
+* Agriculture
+* Business Studies
+
+Use realistic:
+
+* grades
+* terms
+* school contexts
+* assessments
+* activities
+* competitions
+
+Do not overuse generic placeholder text such as:
+
+"Lorem ipsum"
+
+Use realistic content.
+
+---
+
+# 54. CURRICULUM STRUCTURE
+
+Design support for:
+
+Curriculum
+→ Level
+→ Grade
+→ Subject
+→ Strand
+→ Sub-strand
+→ Learning Outcome
+
+Ensure programmes, lessons, questions and assessments can reference curriculum metadata.
+
+This will become important for future analytics and AI.
+
+---
+
+# 55. FUTURE AI READINESS
+
+The wireframe should leave space for future AI capabilities without making AI mandatory.
+
+Potential future features:
+
+* AI teacher assistant
+* AI lesson generation
+* AI assessment generation
+* AI question generation
+* personalized learning
+* weak-topic detection
+* revision recommendations
+* automated feedback
+* lesson summaries
+* student learning recommendations
+
+Do not allow AI features to dominate the initial interface.
+
+---
+
+# 56. DESIGN PRINCIPLES
+
+Follow these principles:
+
+1. Simple before clever.
+2. Information hierarchy before decoration.
+3. Reusable components before one-off components.
+4. Clear actions before visual novelty.
+5. Student-first learning experience.
+6. Teacher-first content creation.
+7. Administrator-first visibility and control.
+8. Network features should feel trustworthy.
+9. Privacy must be obvious.
+10. Mobile learning must be excellent.
+11. Accessibility is not optional.
+12. Every page must have a clear purpose.
+13. Every action must have clear feedback.
+14. Avoid dashboard overload.
+15. Avoid unnecessary modal usage.
+16. Avoid excessive card layouts.
+17. Make data dense interfaces readable.
+18. Make learning interfaces distraction-free.
+
+---
+
+# 57. DELIVERABLE STRUCTURE
+
+Produce the final wireframe documentation in this order:
+
+## PART 1 — Product Vision
+
+* Decimal vision
+* Tuition vision
+* Product relationship
+* Personas
+* Design principles
+
+## PART 2 — Information Architecture
+
+* sitemap
+* navigation
+* product switching
+* role architecture
+
+## PART 3 — Design System
+
+* typography
+* colors
+* spacing
+* components
+* tokens
+* responsive rules
+* accessibility
+
+## PART 4 — Screen Inventory
+
+Create a master table:
+
+| ID | Screen | Role | Route | Priority |
+| -- | ------ | ---- | ----- | -------- |
+
+Mark:
+
+P0 = MVP
+P1 = important
+P2 = later
+
+## PART 5 — Complete Wireframes
+
+Design every screen.
+
+## PART 6 — User Flows
+
+Create all major workflows.
+
+## PART 7 — Responsive Design
+
+Desktop
+Tablet
+Mobile
+
+## PART 8 — States
+
+Loading
+Empty
+Error
+Success
+Permission
+Offline
+
+## PART 9 — Component Architecture
+
+Map wireframe components to reusable frontend components.
+
+## PART 10 — Route Architecture
+
+Create the full route tree.
+
+## PART 11 — Implementation Mapping
+
+Map:
+
+Wireframe
+→ Page
+→ Components
+→ Data
+→ API
+→ Database entity
+
+## PART 12 — MVP CUT
+
+Clearly identify the minimum set of screens required to launch Tuition.
+
+## PART 13 — Phase 2
+
+Identify important post-MVP screens.
+
+## PART 14 — Future
+
+Identify:
+
+* live teaching
+* network
+* AI
+* advanced analytics
+* marketplace
+* certificates
+* monetization
+
+---
+
+# 58. IMPORTANT ENGINEERING CONSTRAINT
+
+Do not design something impossible or unnecessarily expensive to build.
+
+The design must work with the existing Decimal architecture.
+
+Prefer:
+
+* reusable components
+* modular routes
+* shared layouts
+* shared authentication
+* existing Supabase infrastructure
+* existing billing
+* reusable resources
+* reusable programme primitives
+
+Avoid introducing unnecessary technologies.
+
+---
+
+# 59. DATABASE-AWARE DESIGN
+
+Whenever a screen requires data, identify the conceptual entity behind it.
+
+Examples:
+
+Programme
+ProgrammeModule
+Lesson
+Resource
+ProgrammeEnrollment
+LessonProgress
+Assignment
+Submission
+Question
+Assessment
+AssessmentAttempt
+LiveSession
+Activity
+Event
+NetworkAssessment
+
+Do not create UI concepts that have no clear underlying domain model.
+
+---
+
+# 60. FINAL QUALITY BAR
+
+The result should feel comparable to a modern combination of:
+
+* Google Classroom
+* Moodle
+* Coursera
+* Khan Academy
+* Canvas
+* modern SaaS dashboards
+* modern sports/event platforms
+
+But DO NOT copy their visual design.
+
+Take inspiration from their information architecture and interaction quality.
+
+The final product should feel uniquely:
+
+# DECIMAL
+
+Modern.
+Professional.
+Fast.
+Clear.
+Educational.
+Scalable.
+African.
+Network-oriented.
+
+---
+
+# 61. FINAL COMMAND
+
+After inspecting the repository:
+
+1. Build the complete information architecture.
+2. Build the design system.
+3. Build the complete screen inventory.
+4. Create detailed wireframes for every screen.
+5. Create role-specific navigation.
+6. Create all major user flows.
+7. Create responsive versions.
+8. Create all important states.
+9. Create the route architecture.
+10. Map screens to components.
+11. Map components to data/domain entities.
+12. Separate MVP from post-MVP.
+13. Identify inconsistencies or gaps.
+14. Recommend improvements before implementation.
+
+Do NOT start coding immediately.
+
+First produce the **complete UX/wireframe specification**.
+
+Then, after the specification is reviewed, implementation can proceed screen-by-screen in vertical slices.
+
+The ultimate objective is not merely to add pages.
+
+The objective is to make **Decimal Tuition feel like a complete, coherent education product that can eventually operate as a standalone product while remaining deeply integrated with Decimal School Management.**
